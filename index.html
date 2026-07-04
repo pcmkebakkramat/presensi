@@ -819,20 +819,33 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <style>
-      .star-rating {
-        display: flex;
-        flex-direction: row-reverse;
-        justify-content: center;
-        gap: 5px;
-      }
-      .star-rating input { display: none; }
-      .star-rating label { cursor: pointer; color: #cbd5e1; font-size: 2.2rem; margin: 0; transition: color 0.2s; }
-      .star-rating input:checked ~ label,
-      .star-rating label:hover,
-      .star-rating label:hover ~ label { color: #f59e0b; }
-    </style>
-  </head>
+  <style>
+    .star-rating {
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .star-rating input {
+      display: none;
+    }
+
+    .star-rating label {
+      cursor: pointer;
+      color: #cbd5e1;
+      font-size: 2.2rem;
+      margin: 0;
+      transition: color 0.2s;
+    }
+
+    .star-rating input:checked~label,
+    .star-rating label:hover,
+    .star-rating label:hover~label {
+      color: #f59e0b;
+    }
+  </style>
+</head>
 
 <body>
 
@@ -1389,7 +1402,7 @@
 
     <script>
       // --- KONFIGURASI URL SERVER ---
-      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQuauzOastzEB2k3j8TBkWTB4wAvVkwui3fF5QmbTs13WL8iLtca52oKQc0GfdF1dkSg/exec";
+      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybuxYZ8H-H14FY9opBkNTxZXBf4cfDuPFUtMW1bt-pKNGXT45WIcnR-eJ2eare11Nklg/exec";
       const MAX_RADIUS = 500;
       const DAFTAR_LOKASI = [
         { nama: "Masjid Abdul Aziz (SMP Muhammadiyah 8 Kebakkramat)", lat: -7.520470615403366, lng: 110.9065007512984, start: 600, end: 730 },
@@ -1893,7 +1906,7 @@
             let tbData = [];
             users.forEach((u, i) => { tbData.push([i + 1, cleanString(u.nama), cleanString(u.aum), u.count + "x"]); });
             doc.autoTable({ startY: 60, head: [['No', 'Nama Jamaah', 'Asal AUM', 'Jumlah Hadir']], body: tbData, theme: 'grid', styles: { fontSize: 8, cellPadding: 3 }, headStyles: { fillColor: [15, 118, 110] } });
-            
+
             var finalY = doc.lastAutoTable.finalY + 15;
             if (finalY > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); finalY = 20; }
             var tglCetak = "Karanganyar, " + formatTanggalIndoSimple(new Date());
@@ -1928,7 +1941,7 @@
         document.getElementById('detailTitle').innerText = "Daftar Seluruh Jamaah";
         document.getElementById('listDetail').innerHTML = html;
         currentDetailType = 'allJamaah';
-         currentDetailData = { total: users.length };
+        currentDetailData = { total: users.length };
         document.getElementById('detailScreen').classList.remove('hidden');
       }
       function formatTanggalIndoSimple(dateInput) {
@@ -2121,7 +2134,7 @@
       }
 
       async function loadDashboardData() {
-        
+
         var start = document.getElementById('filterStart').value;
         var end = document.getElementById('filterEnd').value;
         try {
@@ -2202,7 +2215,7 @@
           console.error("Gagal memuat ranking:", e);
         } finally {
           let loader = document.getElementById('dashLoading');
-          if(loader) loader.classList.add('hidden');
+          if (loader) loader.classList.add('hidden');
         }
       }
 
@@ -2768,7 +2781,7 @@
           let today = new Date();
           let deadline = new Date('2026-08-01T00:00:00+07:00');
 
-          if (!surveyFilled && (pCount >= 1 || today >= deadline)) {
+          if (!surveyFilled && (pCount >= 2 || today >= deadline)) {
             // Harus isi survey dulu, tidak bisa pakai aplikasi
             openSurveyModal(false);
           } else if (usageCount < 3) {
@@ -2789,7 +2802,7 @@
         let deadline = new Date('2026-08-01T00:00:00+07:00');
         let pCount = parseInt(localStorage.getItem('local_presensi_count') || '0');
 
-        let isForced = (today >= deadline || pCount >= 1);
+        let isForced = (today >= deadline || pCount >= 2);
         let btnNanti = document.getElementById('btnNantiSurvey');
 
         if (isForced) {
@@ -2936,10 +2949,10 @@
       function openPresensiMode() {
         let surveyFilled = localStorage.getItem('has_filled_survey') === 'true';
         let pCount = parseInt(localStorage.getItem('local_presensi_count') || '0');
-        if (!surveyFilled && pCount >= 1) {
-            alert("Harap isi Survei Kepuasan terlebih dahulu untuk dapat melanjutkan presensi.");
-            openSurveyModal(true);
-            return;
+        if (!surveyFilled && pCount >= 2) {
+          alert("Harap isi Survei Kepuasan terlebih dahulu untuk dapat melanjutkan presensi.");
+          openSurveyModal(true);
+          return;
         }
         document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('presensiScreen').classList.remove('hidden'); if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }).then(s => video.srcObject = s); if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
         checkOnboardingAndSurvey();
