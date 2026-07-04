@@ -1,148 +1,850 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <title>Presensi Kajian AUM</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Tinos:wght@400;700&display=swap"
+    rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  
+
   <style>
-    :root { --primary: #0f766e; --bg: #f8fafc; }
-    body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; min-height: 100vh; -webkit-tap-highlight-color: transparent;}
-    .app-container { max-width: 480px; margin: 0 auto; background: #fff; min-height: 100vh; position: relative; overflow-x: hidden; }
-    
+    :root {
+      --primary: #0f766e;
+      --bg: #f8fafc;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      margin: 0;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-container {
+      max-width: 480px;
+      margin: 0 auto;
+      background: #fff;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
     /* LAYAR LOADING */
-    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-    .hidden { display: none !important; }
+    #loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .hidden {
+      display: none !important;
+    }
 
     /* AUTH SCREEN */
-    #authScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: flex; flex-direction: column; overflow-y: auto; }
-    .auth-help-btn { position: absolute; top: 20px; right: 20px; background: #f1f5f9; color: var(--primary); border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; z-index: 2010; }
-    .auth-logo { width: 90px; display: block; margin: 0 auto 15px; }
-    .auth-title { text-align: center; font-weight: 800; color: var(--primary); margin-bottom: 5px; font-size: 1.4rem; line-height: 1.2; }
-    .auth-subtitle { text-align: center; font-size: 0.9rem; color: #64748b; margin-bottom: 30px; font-weight: 500; }
-    .toggle-link { text-align: center; margin-top: 15px; font-size: 0.85rem; color: #64748b; cursor: pointer; text-decoration: underline; }
-    
+    #authScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .auth-help-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #f1f5f9;
+      color: var(--primary);
+      border: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      z-index: 2010;
+    }
+
+    .auth-logo {
+      width: 90px;
+      display: block;
+      margin: 0 auto 15px;
+    }
+
+    .auth-title {
+      text-align: center;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 5px;
+      font-size: 1.4rem;
+      line-height: 1.2;
+    }
+
+    .auth-subtitle {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 30px;
+      font-weight: 500;
+    }
+
+    .toggle-link {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 0.85rem;
+      color: #64748b;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
     /* INPUTS */
-    .input-box { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 15px; display: flex; align-items: center; }
-    .input-box.error { border-color: #ef4444; background: #fef2f2; }
-    .form-control-plain { border: none; background: transparent; width: 100%; outline: none; font-size: 0.95rem; color: #334155; }
-    .form-label { font-size: 0.75rem; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px; margin-left: 5px; }
-    .pass-toggle { color: #94a3b8; cursor: pointer; font-size: 1.2rem; margin-left: 8px; }
-    .pass-toggle.active { color: var(--primary); }
-    .error-text { color: #ef4444; font-size: 0.75rem; margin-top: -10px; margin-bottom: 10px; display: block; margin-left: 5px; font-weight: 500;}
+    .input-box {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-box.error {
+      border-color: #ef4444;
+      background: #fef2f2;
+    }
+
+    .form-control-plain {
+      border: none;
+      background: transparent;
+      width: 100%;
+      outline: none;
+      font-size: 0.95rem;
+      color: #334155;
+    }
+
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      display: block;
+      margin-bottom: 4px;
+      margin-left: 5px;
+    }
+
+    .pass-toggle {
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1.2rem;
+      margin-left: 8px;
+    }
+
+    .pass-toggle.active {
+      color: var(--primary);
+    }
+
+    .error-text {
+      color: #ef4444;
+      font-size: 0.75rem;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      display: block;
+      margin-left: 5px;
+      font-weight: 500;
+    }
 
     /* PICKER STYLE */
-    .picker-trigger { cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%; }
-    .picker-placeholder { color: #64748b; font-style: italic; }
-    .picker-value { color: #334155; font-weight: 500; }
-    #pickerModal { z-index: 3000 !important; background: #f8fafc; }
-    .picker-search-container { position: sticky; top: 0; background: #f8fafc; padding: 10px 20px; z-index: 5; border-bottom: 1px solid #e2e8f0; }
-    .picker-search-input { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .picker-list { padding: 10px 20px; padding-bottom: 50px; }
-    .picker-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; border: 1px solid #e2e8f0; transition: 0.2s; }
-    .picker-item:active { background: #e0f2fe; border-color: var(--primary); transform: scale(0.98); }
-    .picker-item strong { display: block; font-size: 0.9rem; color: #334155; }
+    .picker-trigger {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
 
-    button.btn-primary { background: var(--primary); border: none; width: 100%; padding: 15px; border-radius: 15px; color: white; font-weight: 600; margin-top: 10px; }
-    button.btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; }
+    .picker-placeholder {
+      color: #64748b;
+      font-style: italic;
+    }
+
+    .picker-value {
+      color: #334155;
+      font-weight: 500;
+    }
+
+    #pickerModal {
+      z-index: 3000 !important;
+      background: #f8fafc;
+    }
+
+    .picker-search-container {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      padding: 10px 20px;
+      z-index: 5;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .picker-search-input {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      outline: none;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .picker-list {
+      padding: 10px 20px;
+      padding-bottom: 50px;
+    }
+
+    .picker-item {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      border: 1px solid #e2e8f0;
+      transition: 0.2s;
+    }
+
+    .picker-item:active {
+      background: #e0f2fe;
+      border-color: var(--primary);
+      transform: scale(0.98);
+    }
+
+    .picker-item strong {
+      display: block;
+      font-size: 0.9rem;
+      color: #334155;
+    }
+
+    button.btn-primary {
+      background: var(--primary);
+      border: none;
+      width: 100%;
+      padding: 15px;
+      border-radius: 15px;
+      color: white;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    button.btn-primary:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
 
     /* DASHBOARD */
-    .dashboard-header { background: linear-gradient(135deg, var(--primary), #0d9488); padding: 20px 20px 80px; border-bottom-left-radius: 35px; border-bottom-right-radius: 35px; color: white; position: relative; }
-    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    .header-brand { display: flex; align-items: center; gap: 12px; flex-grow: 1; }
-    .header-logo-img { width: 45px; height: 45px; border-radius: 10px; background: rgba(255,255,255,0.2); padding: 5px; backdrop-filter: blur(5px); }
-    .header-title h1 { font-size: 1.1rem; font-weight: 800; margin: 0; line-height: 1.2; letter-spacing: 0.5px; }
-    .header-title p { font-size: 0.75rem; margin: 0; opacity: 0.85; font-weight: 400; }
-    .btn-menu-toggle { background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); font-size: 1.4rem; transition: 0.2s; }
-    .user-info-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 16px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); }
-    .u-text h5 { margin: 0; font-size: 0.95rem; font-weight: 600; }
-    .u-text p { margin: 0; font-size: 0.75rem; opacity: 0.8; }
+    .dashboard-header {
+      background: linear-gradient(135deg, var(--primary), #0d9488);
+      padding: 20px 20px 80px;
+      border-bottom-left-radius: 35px;
+      border-bottom-right-radius: 35px;
+      color: white;
+      position: relative;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: linear-gradient(135deg, var(--primary), #0d9488);
+      margin: -20px -20px 0;
+      padding: 20px 20px 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-grow: 1;
+    }
+
+    .header-logo-img {
+      width: 45px;
+      height: 45px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 5px;
+      backdrop-filter: blur(5px);
+    }
+
+    .header-title h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: 0.5px;
+    }
+
+    .header-title p {
+      font-size: 0.75rem;
+      margin: 0;
+      opacity: 0.85;
+      font-weight: 400;
+    }
+
+    .btn-menu-toggle {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      font-size: 1.4rem;
+      transition: 0.2s;
+    }
+
+    .header-user-text {
+      margin-top: 30px;
+    }
+
+    .header-greeting {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-bottom: 2px;
+    }
+
+    .header-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+      text-transform: capitalize;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-lencana {
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: 0.2s;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+
+    .badge-lencana:active {
+      transform: scale(0.9);
+    }
+
+    .header-aum {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
 
     /* MENU */
-    .menu-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1200; opacity: 0; visibility: hidden; transition: 0.3s; }
-    .menu-backdrop.show { opacity: 1; visibility: visible; }
-    .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 1210; padding: 25px 20px; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 -5px 30px rgba(0,0,0,0.15); max-width: 480px; margin: 0 auto; right: 0; }
-    .bottom-sheet.show { bottom: 0; }
-    .sheet-handle { width: 40px; height: 5px; background: #e2e8f0; border-radius: 10px; margin: 0 auto 20px; }
-    .menu-list { list-style: none; padding: 0; margin: 0; }
-    .menu-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; cursor: pointer; color: #334155; }
-    .menu-item:active { background: #f8fafc; }
-    .menu-icon { width: 36px; height: 36px; background: #f1f5f9; color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1.1rem; }
-    .menu-text { font-weight: 500; font-size: 0.95rem; flex-grow: 1; }
-    .menu-chevron { color: #cbd5e1; font-size: 0.9rem; }
-    .menu-item.logout { color: #dc2626; }
-    .menu-item.logout .menu-icon { background: #fee2e2; color: #dc2626; }
+    .menu-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1200;
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.3s;
+    }
+
+    .menu-backdrop.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .bottom-sheet {
+      position: fixed;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      background: white;
+      border-top-left-radius: 25px;
+      border-top-right-radius: 25px;
+      z-index: 1210;
+      padding: 25px 20px;
+      transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.15);
+      max-width: 480px;
+      margin: 0 auto;
+      right: 0;
+    }
+
+    .bottom-sheet.show {
+      bottom: 0;
+    }
+
+    .sheet-handle {
+      width: 40px;
+      height: 5px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      margin: 0 auto 20px;
+    }
+
+    .menu-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      color: #334155;
+    }
+
+    .menu-item:active {
+      background: #f8fafc;
+    }
+
+    .menu-icon {
+      width: 36px;
+      height: 36px;
+      background: #f1f5f9;
+      color: var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      font-size: 1.1rem;
+    }
+
+    .menu-text {
+      font-weight: 500;
+      font-size: 0.95rem;
+      flex-grow: 1;
+    }
+
+    .menu-chevron {
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+
+    .menu-item.logout {
+      color: #dc2626;
+    }
+
+    .menu-item.logout .menu-icon {
+      background: #fee2e2;
+      color: #dc2626;
+    }
 
     /* CONTENT */
-    .main-card { background: white; margin: -60px 20px 20px; border-radius: 24px; padding: 15px; box-shadow: 0 15px 30px rgba(0,0,0,0.08); position: relative; z-index: 10; }
-    .photo-display { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 16px; background: #f1f5f9; margin-bottom: 15px; display: block; }
-    .photo-loading { display: flex; align-items: center; justify-content: center; background: #e2e8f0; color: #64748b; font-size: 0.9rem; font-weight: 500; height: 200px; border-radius: 16px; margin-bottom: 15px;}
-    .last-date-info { text-align: center; margin-bottom: 15px; }
-    .last-date-info small { color: #64748b; font-size: 0.75rem; display: block; }
-    .last-date-info strong { color: var(--primary); font-size: 0.9rem; }
-    .stats-grid { display: flex; gap: 10px; margin-bottom: 20px; }
-    .stat-item { flex: 1; background: #f8fafc; padding: 10px; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0; }
-    .stat-value { font-weight: 700; font-size: 1.1rem; color: #334155; }
-    .stat-value.highlight { color: var(--primary); }
+    .main-card {
+      background: white;
+      margin: 0 20px 20px;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      position: relative;
+      z-index: 10;
+      border: 1px solid #f1f5f9;
+    }
 
-    .action-area { padding: 0 20px 20px; }
-    #btnStartAbsen { width: 100%; padding: 16px; font-size: 1rem; border-radius: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 20px rgba(15, 118, 110, 0.2); transition: 0.3s; }
-    #dashboardMsg { text-align: center; font-size: 0.8rem; margin-top: 10px; padding: 10px; border-radius: 10px; background: #fff3cd; color: #856404; display: none; border: 1px solid #ffeeba; }
-    .msg-danger { background: #fee2e2 !important; color: #991b1b !important; border-color: #fca5a5 !important; }
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fef3c7;
+      color: #d97706;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
 
-    .history-section { padding: 0 20px 80px; }
-    .history-item { background: white; padding: 15px; border-radius: 16px; margin-bottom: 10px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-    .hist-date { font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 3px; }
-    .hist-loc { font-size: 0.75rem; color: #64748b; display: flex; align-items: center; gap: 5px; }
-    .hist-loc i { color: #dc2626; } 
-    .filter-box { background: #f1f5f9; padding: 10px; border-radius: 12px; margin-bottom: 15px; }
-    .form-control-sm { font-size: 0.8rem; padding: 6px 10px; border-radius: 8px; }
-    
-    .camera-container { width: 100%; aspect-ratio: 1; background: black; position: relative; overflow: hidden; border-radius: 16px; }
-    #camera { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .progress-wrapper {
+      margin-bottom: 15px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .progress-track {
+      background: #f1f5f9;
+      height: 10px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .progress-fill {
+      background: var(--primary);
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1.5s ease-out;
+    }
+
+    .last-date-info {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .last-date-info strong {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .action-area {
+      padding: 0 20px 20px;
+    }
+
+    #btnStartAbsen {
+      width: 100%;
+      padding: 16px;
+      font-size: 1rem;
+      border-radius: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 8px 20px rgba(15, 118, 110, 0.2);
+      transition: 0.3s;
+    }
+
+    #dashboardMsg {
+      text-align: center;
+      font-size: 0.8rem;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: #fff3cd;
+      color: #856404;
+      display: none;
+      border: 1px solid #ffeeba;
+    }
+
+    .msg-danger {
+      background: #fee2e2 !important;
+      color: #991b1b !important;
+      border-color: #fca5a5 !important;
+    }
+
+    .history-section {
+      padding: 0 20px 80px;
+    }
+
+    .history-item {
+      background: white;
+      padding: 15px;
+      border-radius: 16px;
+      margin-bottom: 10px;
+      border: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hist-date {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #334155;
+      margin-bottom: 3px;
+    }
+
+    .hist-loc {
+      font-size: 0.75rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .hist-loc i {
+      color: #dc2626;
+    }
+
+    .filter-box {
+      background: #f1f5f9;
+      padding: 10px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    .form-control-sm {
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    .camera-container {
+      width: 100%;
+      aspect-ratio: 1;
+      background: black;
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+
+    #camera {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
 
     /* UTILITIES */
-    .fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; flex-direction: column; overflow-y: auto; }
-    .overlay-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; background: white; position: sticky; top:0; z-index:10;}
-    .overlay-body { padding: 20px; flex-grow: 1; }
-    .btn-close-custom { background: none; border: none; font-size: 1.5rem; color: #334155; }
-    #infoModal { z-index: 3000 !important; }
-    .nav-tabs .nav-link { color: #64748b; font-size: 0.9rem; }
-    .nav-tabs .nav-link.active { color: var(--primary); font-weight: 600; border-color: #dee2e6 #dee2e6 #fff; }
-    .guide-step { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start; }
-    .step-num { background: #e0f2fe; color: var(--primary); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; margin-top: 2px; }
-    .step-text { font-size: 0.9rem; color: #334155; line-height: 1.5; }
-    .browser-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; margin-bottom: 10px; display: inline-block; font-weight: 600;}
-    .bg-chrome { background: #fef3c7; color: #b45309; } .bg-safari { background: #e0e7ff; color: #3730a3; } .bg-samsung { background: #fce7f3; color: #9d174d; }
+    .fullscreen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .overlay-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .overlay-body {
+      padding: 20px;
+      flex-grow: 1;
+    }
+
+    .btn-close-custom {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #334155;
+    }
+
+    #infoModal {
+      z-index: 3000 !important;
+    }
+
+    .nav-tabs .nav-link {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .nav-tabs .nav-link.active {
+      color: var(--primary);
+      font-weight: 600;
+      border-color: #dee2e6 #dee2e6 #fff;
+    }
+
+    .guide-step {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      background: #e0f2fe;
+      color: var(--primary);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-text {
+      font-size: 0.9rem;
+      color: #334155;
+      line-height: 1.5;
+    }
+
+    .browser-badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      display: inline-block;
+      font-weight: 600;
+    }
+
+    .bg-chrome {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .bg-safari {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .bg-samsung {
+      background: #fce7f3;
+      color: #9d174d;
+    }
+
+    /* NEW FEATURES */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      background: white;
+      margin: -55px 20px 20px;
+      border-radius: 20px;
+      padding: 20px 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      position: relative;
+      z-index: 15;
+      border: 1px solid #f1f5f9;
+    }
+
+    .feature-item {
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .feature-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 5px;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: 0.2s;
+    }
+
+    .feature-item:active .feature-icon {
+      transform: scale(0.9);
+    }
+
+    .feature-item span {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #475569;
+      display: block;
+      line-height: 1.1;
+    }
+
+    .bg-warning-light {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .bg-info-light {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+
+    .bg-danger-light {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .bg-purple-light {
+      background: #f3e8ff;
+      color: #9333ea;
+    }
+
+    .placeholder-content {
+      padding: 40px 20px;
+      text-align: center;
+      color: #64748b;
+    }
+
+    .placeholder-icon {
+      font-size: 3rem;
+      opacity: 0.2;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
+
 <body>
 
-<div id="loading" class="hidden"><div class="spinner-border text-success"></div><p class="mt-2 fw-bold text-success small">Memproses...</p></div>
+  <div id="loading" class="hidden">
+    <div class="spinner-border text-success"></div>
+    <p class="mt-2 fw-bold text-success small">Memproses...</p>
+  </div>
 
-<div class="app-container">
+  <div class="app-container">
 
-  <div id="authScreen">
-    <div style="padding: 30px; display: flex; flex-direction: column; justify-content: center; height: 100%;">
-        <button type="button" class="auth-help-btn" onclick="openInfoModal()" title="Panduan & Instalasi"><i class="bi bi-question-lg"></i></button>
-        <img src="https://raw.githubusercontent.com/kangmrogram/pcmkebakkramat/refs/heads/main/icon-512.png" class="auth-logo">
+    <div id="authScreen">
+      <div style="padding: 30px; display: flex; flex-direction: column; justify-content: center; height: 100%;">
+        <button type="button" class="auth-help-btn" onclick="openInfoModal()" title="Panduan & Instalasi"><i
+            class="bi bi-question-lg"></i></button>
+        <img src="https://raw.githubusercontent.com/kangmrogram/pcmkebakkramat/refs/heads/main/icon-512.png"
+          class="auth-logo">
         <h4 class="auth-title">Presensi Kajian AUM</h4>
         <p class="auth-subtitle">PCM Kebakkramat, Karanganyar</p>
         <div id="formLogin">
           <label class="form-label">Username</label>
-          <div class="input-box"><input type="text" id="loginUser" class="form-control-plain" placeholder="Username / Email / No.HP" oninput="validateUsername(this)"></div>
+          <div class="input-box"><input type="text" id="loginUser" class="form-control-plain"
+              placeholder="Username / Email / No.HP" oninput="validateUsername(this)"></div>
           <span id="loginUserError" class="error-text hidden">Tidak boleh ada spasi!</span>
           <label class="form-label">Password</label>
-          <div class="input-box"><input type="password" id="loginPass" class="form-control-plain" placeholder="Password"><i class="bi bi-eye-slash pass-toggle" onclick="togglePassword('loginPass', this)"></i></div>
+          <div class="input-box"><input type="password" id="loginPass" class="form-control-plain"
+              placeholder="Password"><i class="bi bi-eye-slash pass-toggle"
+              onclick="togglePassword('loginPass', this)"></i></div>
           <button type="button" class="btn-primary" onclick="doLogin()">MASUK</button>
           <div class="toggle-link" onclick="showRegister()">Klaim Nama / Daftar Akun</div>
         </div>
@@ -150,632 +852,1044 @@
           <div class="alert alert-info py-2 small">Lengkapi data akun presensi Anda.</div>
           <label class="form-label">Nama Lengkap</label>
           <div class="input-box picker-trigger" onclick="openPicker('nama')">
-             <span id="textRegNama" class="picker-placeholder">-- Pilih Nama --</span><i class="bi bi-chevron-down text-muted"></i>
+            <span id="textRegNama" class="picker-placeholder">-- Pilih Nama --</span><i
+              class="bi bi-chevron-down text-muted"></i>
           </div>
           <input type="hidden" id="regNama">
           <label class="form-label">Asal AUM</label>
           <div class="input-box picker-trigger" onclick="openPicker('aum')">
-             <span id="textRegAum" class="picker-placeholder">-- Pilih AUM --</span><i class="bi bi-chevron-down text-muted"></i>
+            <span id="textRegAum" class="picker-placeholder">-- Pilih AUM --</span><i
+              class="bi bi-chevron-down text-muted"></i>
           </div>
           <input type="hidden" id="regAum">
           <label class="form-label">Username Baru</label>
-          <div class="input-box"><input type="text" id="regUser" class="form-control-plain" placeholder="Buat Username" oninput="validateUsername(this)"></div>
+          <div class="input-box"><input type="text" id="regUser" class="form-control-plain" placeholder="Buat Username"
+              oninput="validateUsername(this)"></div>
           <span id="regUserError" class="error-text hidden">Tidak boleh ada spasi!</span>
           <label class="form-label">Password Baru</label>
-          <div class="input-box"><input type="password" id="regPass" class="form-control-plain" placeholder="Buat Password"><i class="bi bi-eye-slash pass-toggle" onclick="togglePassword('regPass', this)"></i></div>
+          <div class="input-box"><input type="password" id="regPass" class="form-control-plain"
+              placeholder="Buat Password"><i class="bi bi-eye-slash pass-toggle"
+              onclick="togglePassword('regPass', this)"></i></div>
           <button type="button" class="btn-primary" onclick="doRegister()">DAFTAR AKUN</button>
           <div class="toggle-link" onclick="showLogin()">Sudah punya akun? Login</div>
         </div>
+      </div>
     </div>
-  </div>
 
-  <div id="homeScreen" class="hidden">
-    <div class="dashboard-header">
-      <div class="header-top">
-        <div class="header-brand">
-            <img src="icon-512.png" class="header-logo-img" alt="Logo" onerror="this.src='https://raw.githubusercontent.com/kangmrogram/pcmkebakkramat/refs/heads/main/icon-512.png'">
-            <div class="header-title"><h1>Presensi Kajian AUM</h1><p>PCM Kebakkramat, Karanganyar</p></div>
+    <div id="homeScreen" class="hidden">
+      <div class="dashboard-header">
+        <div class="header-top">
+          <div class="header-brand">
+            <img src="icon-512.png" class="header-logo-img" alt="Logo"
+              onerror="this.src='https://raw.githubusercontent.com/kangmrogram/pcmkebakkramat/refs/heads/main/icon-512.png'">
+            <div class="header-title">
+              <h1>Presensi Kajian AUM</h1>
+              <p>PCM Kebakkramat, Karanganyar</p>
+            </div>
+          </div>
+          <button class="btn-menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
         </div>
-        <button class="btn-menu-toggle" onclick="toggleMenu()"><i class="bi bi-list"></i></button>
+        <div class="header-user-text">
+          <div class="header-greeting" id="dashGreetingTime">Assalamu'alaikum,</div>
+          <div class="header-name"><span id="dashGreetingName">Memuat...</span> <span id="dashBadgeLencana"
+              class="badge-lencana" onclick="openBadgeInfo()" style="display:none;"></span></div>
+          <div class="header-aum"><i class="bi bi-geo-alt-fill"></i> <span id="dashGreetingAum">-</span></div>
+        </div>
       </div>
-      <div class="user-info-row">
-        <div class="u-text"><h5 id="dashNama">Nama User</h5><p id="dashAum">Asal AUM</p></div>
-      </div>
-    </div>
 
-    <div class="menu-backdrop" id="menuBackdrop" onclick="toggleMenu()"></div>
-    <div class="bottom-sheet" id="mainMenu">
+      <div class="features-grid">
+        <div class="feature-item" onclick="openFeatureModal('leaderboardScreen')">
+          <div class="feature-icon bg-warning-light"><i class="bi bi-person-lines-fill"></i></div>
+          <span>Paling Aktif</span>
+        </div>
+        <div class="feature-item" onclick="openFeatureModal('heatmapScreen')">
+          <div class="feature-icon bg-info-light"><i class="bi bi-buildings-fill"></i></div>
+          <span>AUM Teraktif</span>
+        </div>
+        <div class="feature-item" onclick="openFeatureModal('daftarAumScreen')">
+          <div class="feature-icon bg-danger-light"><i class="bi bi-list-stars"></i></div>
+          <span>Daftar AUM</span>
+        </div>
+      </div>
+
+      <div class="menu-backdrop" id="menuBackdrop" onclick="toggleMenu()"></div>
+      <div class="bottom-sheet" id="mainMenu">
         <div class="sheet-handle"></div>
         <h6 class="fw-bold mb-3 ps-2 text-dark">Menu Aplikasi</h6>
         <ul class="menu-list" id="menuListContainer"></ul>
-    </div>
-
-    <div class="main-card">
-      <div id="photoContainer" class="photo-loading"><span><div class="spinner-border spinner-border-sm text-secondary me-2"></div> Memuat Foto...</span></div>
-      <img id="dashFoto" class="photo-display hidden">
-      <div class="text-center mb-3"><small class="text-muted">Terakhir Hadir:</small><br><strong id="dashLastDate" class="text-primary">-</strong></div>
-      <div class="stats-grid">
-         <div class="stat-item"><small class="text-muted">KEHADIRAN</small><div id="statCount" class="stat-value">0 / 0</div></div>
-         <div class="stat-item"><small class="text-muted">PERSENTASE</small><div id="statPercent" class="stat-value highlight">0%</div></div>
       </div>
-    </div>
 
-    <div class="action-area">
-      <button id="btnStartAbsen" class="btn-primary" onclick="openPresensiMode()" disabled><div class="spinner-border spinner-border-sm"></div> Memuat...</button>
-      <div id="dashboardMsg"></div>
-    </div>
+      <div class="main-card">
+        <div id="dashStreak" class="streak-badge"><i class="bi bi-fire text-warning"></i> <span>Menganalisis...</span>
+        </div>
 
-    <div class="history-section">
-      <h6 class="fw-bold mb-3">Riwayat Kehadiran</h6>
-      <div class="filter-box">
-         <div class="row g-2">
+        <div class="progress-wrapper">
+          <div class="progress-header">
+            <span>Kehadiran: <span id="statCountText">0/0</span></span>
+            <span id="statPercentText">0%</span>
+          </div>
+          <div class="progress-track">
+            <div id="statProgressBar" class="progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="last-date-info">Terakhir Hadir: <strong id="dashLastDate">-</strong></div>
+      </div>
+
+      <div class="action-area">
+        <button id="btnStartAbsen" class="btn-primary" onclick="openPresensiMode()" disabled>
+          <div class="spinner-border spinner-border-sm"></div> Memuat...
+        </button>
+        <div id="dashboardMsg"></div>
+      </div>
+
+      <div class="history-section">
+        <h6 class="fw-bold mb-3">Riwayat Kehadiran</h6>
+        <div class="filter-box">
+          <div class="row g-2">
             <div class="col-5"><input type="date" id="filterStart" class="form-control form-control-sm"></div>
             <div class="col-5"><input type="date" id="filterEnd" class="form-control form-control-sm"></div>
             <div class="col-2">
-                <div class="btn-group w-100 h-100">
-                    <button class="btn btn-sm btn-dark" onclick="loadDashboardData()" title="Cari"><i class="bi bi-search"></i></button>
-                    <button class="btn btn-sm btn-danger" onclick="generatePDF()" title="Cetak PDF"><i class="bi bi-file-earmark-pdf-fill"></i></button>
-                </div>
+              <div class="btn-group w-100 h-100">
+                <button class="btn btn-sm btn-dark" onclick="loadDashboardData()" title="Cari"><i
+                    class="bi bi-search"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="generatePDF()" title="Cetak PDF"><i
+                    class="bi bi-file-earmark-pdf-fill"></i></button>
+              </div>
             </div>
-         </div>
+          </div>
+        </div>
+        <div id="historyList">
+          <div class="text-center small text-muted">Memuat data...</div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-3" id="historyPagination"
+          style="display:none !important;">
+          <button class="btn btn-sm btn-outline-secondary" id="btnPrevHistory" onclick="changeHistoryPage(-1)"><i
+              class="bi bi-chevron-left"></i></button>
+          <span class="small text-muted" id="historyPageInfo">Hal 1 dari 1</span>
+          <button class="btn btn-sm btn-outline-secondary" id="btnNextHistory" onclick="changeHistoryPage(1)"><i
+              class="bi bi-chevron-right"></i></button>
+        </div>
       </div>
-      <div id="historyList"><div class="text-center small text-muted">Memuat data...</div></div>
     </div>
-  </div>
 
-  <div id="pickerModal" class="fullscreen-overlay hidden">
-    <div class="overlay-header"><h6 class="m-0 fw-bold" id="pickerTitle">Pilih Item</h6><button class="btn-close-custom" onclick="closePicker()"><i class="bi bi-x"></i></button></div>
-    <div class="picker-search-container"><input type="text" id="pickerSearch" class="picker-search-input" placeholder="Ketik untuk mencari..." onkeyup="filterPicker()"></div>
-    <div class="picker-list" id="pickerListContainer"></div>
-  </div>
+    <div id="pickerModal" class="fullscreen-overlay hidden">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold" id="pickerTitle">Pilih Item</h6><button class="btn-close-custom"
+          onclick="closePicker()"><i class="bi bi-x"></i></button>
+      </div>
+      <div class="picker-search-container"><input type="text" id="pickerSearch" class="picker-search-input"
+          placeholder="Ketik untuk mencari..." onkeyup="filterPicker()"></div>
+      <div class="picker-list" id="pickerListContainer"></div>
+    </div>
 
-  <div id="presensiScreen" class="fullscreen-overlay hidden">
-    <div class="overlay-header"><h6 class="m-0 fw-bold">Form Presensi</h6><button class="btn-close-custom" onclick="closePresensiMode()"><i class="bi bi-x"></i></button></div>
-    <div class="overlay-body">
+    <div id="presensiScreen" class="fullscreen-overlay hidden">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold">Form Presensi</h6><button class="btn-close-custom" onclick="closePresensiMode()"><i
+            class="bi bi-x"></i></button>
+      </div>
+      <div class="overlay-body">
         <div class="camera-container mb-3"><video id="camera" autoplay playsinline></video></div>
         <canvas id="canvas" class="hidden"></canvas>
         <div id="statusLokasiBox" class="alert alert-warning py-2 small mb-3">Mencari Lokasi...</div>
-        <div class="input-box"><textarea id="kesimpulan" class="form-control-plain" rows="3" placeholder="Tulis kesimpulan kajian..."></textarea></div>
+        <div class="input-box"><textarea id="kesimpulan" class="form-control-plain" rows="3"
+            placeholder="Tulis kesimpulan kajian..."></textarea></div>
         <button id="btnKirim" class="btn-primary" onclick="kirimAbsen()" disabled>KIRIM DATA</button>
+      </div>
     </div>
-  </div>
 
-  <div id="profileScreen" class="fullscreen-overlay hidden">
-    <div class="overlay-header"><h6 class="m-0 fw-bold">Profil Anggota</h6><button class="btn-close-custom" onclick="closeProfile()"><i class="bi bi-arrow-left"></i></button></div>
-    <div class="overlay-body">
-        <label class="form-label">Nama Lengkap</label><div class="input-box"><input type="text" id="profNama" class="form-control-plain"></div>
-        <label class="form-label">Asal AUM</label><div class="input-box"><select id="profAum" class="form-control-plain"></select></div>
-        <label class="form-label">Jenis Kelamin</label><div class="input-box"><select id="profJk" class="form-control-plain"><option value="">- Pilih -</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></div>
-        <label class="form-label">NBM</label><div class="input-box"><input type="text" id="profNbm" class="form-control-plain"></div>
-        <label class="form-label">Tempat Lahir</label><div class="input-box"><input type="text" id="profTempat" class="form-control-plain"></div>
-        <label class="form-label">Tanggal Lahir</label><div class="input-box"><input type="date" id="profTgl" class="form-control-plain"></div>
-        <label class="form-label">Alamat</label><div class="input-box"><textarea id="profAlamat" class="form-control-plain" rows="2"></textarea></div>
-        <label class="form-label">Email</label><div class="input-box"><input type="email" id="profEmail" class="form-control-plain"></div>
-        <label class="form-label">No HP</label><div class="input-box"><input type="text" id="profHp" class="form-control-plain"></div>
+    <div id="profileScreen" class="fullscreen-overlay hidden">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold">Profil Anggota</h6><button class="btn-close-custom" onclick="closeProfile()"><i
+            class="bi bi-arrow-left"></i></button>
+      </div>
+      <div class="overlay-body">
+        <label class="form-label">Nama Lengkap</label>
+        <div class="input-box"><input type="text" id="profNama" class="form-control-plain"></div>
+        <label class="form-label">Asal AUM</label>
+        <div class="input-box"><select id="profAum" class="form-control-plain"></select></div>
+        <label class="form-label">Jenis Kelamin</label>
+        <div class="input-box"><select id="profJk" class="form-control-plain">
+            <option value="">- Pilih -</option>
+            <option value="Laki-laki">Laki-laki</option>
+            <option value="Perempuan">Perempuan</option>
+          </select></div>
+        <label class="form-label">NBM</label>
+        <div class="input-box"><input type="text" id="profNbm" class="form-control-plain"></div>
+        <label class="form-label">Tempat Lahir</label>
+        <div class="input-box"><input type="text" id="profTempat" class="form-control-plain"></div>
+        <label class="form-label">Tanggal Lahir</label>
+        <div class="input-box"><input type="date" id="profTgl" class="form-control-plain"></div>
+        <label class="form-label">Alamat</label>
+        <div class="input-box"><textarea id="profAlamat" class="form-control-plain" rows="2"></textarea></div>
+        <label class="form-label">Email</label>
+        <div class="input-box"><input type="email" id="profEmail" class="form-control-plain"></div>
+        <label class="form-label">No HP</label>
+        <div class="input-box"><input type="text" id="profHp" class="form-control-plain"></div>
         <button class="btn-primary" onclick="saveProfile()">SIMPAN PERUBAHAN</button>
+      </div>
     </div>
-  </div>
 
-  <div id="passwordScreen" class="fullscreen-overlay hidden">
-    <div class="overlay-header"><h6 class="m-0 fw-bold">Ganti Password</h6><button class="btn-close-custom" onclick="closeChangePassword()"><i class="bi bi-x"></i></button></div>
-    <div class="overlay-body">
-        <div class="input-box"><input type="password" id="passNew" class="form-control-plain" placeholder="Password Baru"><i class="bi bi-eye-slash pass-toggle" onclick="togglePassword('passNew', this)"></i></div>
-        <div class="input-box"><input type="password" id="passConfirm" class="form-control-plain" placeholder="Ulangi Password Baru"><i class="bi bi-eye-slash pass-toggle" onclick="togglePassword('passConfirm', this)"></i></div>
+    <div id="passwordScreen" class="fullscreen-overlay hidden">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold">Ganti Password</h6><button class="btn-close-custom" onclick="closeChangePassword()"><i
+            class="bi bi-x"></i></button>
+      </div>
+      <div class="overlay-body">
+        <div class="input-box"><input type="password" id="passNew" class="form-control-plain"
+            placeholder="Password Baru"><i class="bi bi-eye-slash pass-toggle"
+            onclick="togglePassword('passNew', this)"></i></div>
+        <div class="input-box"><input type="password" id="passConfirm" class="form-control-plain"
+            placeholder="Ulangi Password Baru"><i class="bi bi-eye-slash pass-toggle"
+            onclick="togglePassword('passConfirm', this)"></i></div>
         <button class="btn-primary" onclick="savePassword()">UBAH PASSWORD</button>
+      </div>
     </div>
-  </div>
 
-  <div id="infoModal" class="fullscreen-overlay hidden">
-    <div class="overlay-header"><h6 class="m-0 fw-bold">Panduan Aplikasi</h6><button class="btn-close-custom" onclick="closeInfoModal()"><i class="bi bi-x"></i></button></div>
-    <div class="overlay-body">
+    <div id="infoModal" class="fullscreen-overlay hidden">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold">Panduan Aplikasi</h6><button class="btn-close-custom" onclick="closeInfoModal()"><i
+            class="bi bi-x"></i></button>
+      </div>
+      <div class="overlay-body">
         <ul class="nav nav-tabs mb-3" id="infoTabs">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabDaftar">Akun</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabInstall">Instalasi</a></li>
+          <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabDaftar">Akun</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabInstall">Instalasi</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane fade show active" id="tabDaftar">
-                <h6 class="fw-bold mb-3">Cara Klaim Nama / Daftar</h6>
-                <div class="guide-step"><div class="step-num">1</div><div class="step-text">Klik <b>"Klaim Nama / Daftar Akun"</b> di halaman login.</div></div>
-                <div class="guide-step"><div class="step-num">2</div><div class="step-text">Gunakan <b>Kotak Pencarian</b> untuk menemukan <b>Nama Lengkap</b> Anda. Pilih nama Anda dari daftar dropdown yang muncul.</div></div>
-                <div class="guide-step"><div class="step-num">3</div><div class="step-text">Pilih <b>Asal AUM</b> yang sesuai.</div></div>
-                <div class="guide-step"><div class="step-num">4</div><div class="step-text">Buat <b>Username</b> (Tanpa spasi) dan <b>Password</b>.</div></div>
+          <div class="tab-pane fade show active" id="tabDaftar">
+            <h6 class="fw-bold mb-3">Cara Klaim Nama / Daftar</h6>
+            <div class="guide-step">
+              <div class="step-num">1</div>
+              <div class="step-text">Klik <b>"Klaim Nama / Daftar Akun"</b> di halaman login.</div>
             </div>
-            <div class="tab-pane fade" id="tabInstall">
-                <div class="alert alert-light border small">Instal aplikasi ini agar muncul di layar depan HP Anda.</div>
-                <div class="mb-4"><span class="browser-badge bg-chrome">Android (Chrome)</span>
-                    <div class="guide-step"><div class="step-num"><i class="bi bi-three-dots-vertical"></i></div><div class="step-text">Ketuk ikon titik tiga di pojok kanan atas browser.</div></div>
-                    <div class="guide-step"><div class="step-num"><i class="bi bi-phone"></i></div><div class="step-text">Pilih menu <b>"Tambahkan ke Layar Utama"</b> (Add to Home Screen).</div></div>
-                </div>
-                <div class="mb-4"><span class="browser-badge bg-safari">iOS (Safari)</span>
-                    <div class="guide-step"><div class="step-num"><i class="bi bi-box-arrow-up"></i></div><div class="step-text">Ketuk tombol <b>Share</b> (kotak dengan panah ke atas) di bagian bawah layar.</div></div>
-                    <div class="guide-step"><div class="step-num"><i class="bi bi-plus-square"></i></div><div class="step-text">Geser ke bawah dan pilih <b>"Tambah ke Layar Utama"</b>.</div></div>
-                </div>
+            <div class="guide-step">
+              <div class="step-num">2</div>
+              <div class="step-text">Gunakan <b>Kotak Pencarian</b> untuk menemukan <b>Nama Lengkap</b> Anda. Pilih nama
+                Anda dari daftar dropdown yang muncul.</div>
             </div>
+            <div class="guide-step">
+              <div class="step-num">3</div>
+              <div class="step-text">Pilih <b>Asal AUM</b> yang sesuai.</div>
+            </div>
+            <div class="guide-step">
+              <div class="step-num">4</div>
+              <div class="step-text">Buat <b>Username</b> (Tanpa spasi) dan <b>Password</b>.</div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="tabInstall">
+            <div class="alert alert-light border small">Instal aplikasi ini agar muncul di layar depan HP Anda.</div>
+            <div class="mb-4"><span class="browser-badge bg-chrome">Android (Chrome)</span>
+              <div class="guide-step">
+                <div class="step-num"><i class="bi bi-three-dots-vertical"></i></div>
+                <div class="step-text">Ketuk ikon titik tiga di pojok kanan atas browser.</div>
+              </div>
+              <div class="guide-step">
+                <div class="step-num"><i class="bi bi-phone"></i></div>
+                <div class="step-text">Pilih menu <b>"Tambahkan ke Layar Utama"</b> (Add to Home Screen).</div>
+              </div>
+            </div>
+            <div class="mb-4"><span class="browser-badge bg-safari">iOS (Safari)</span>
+              <div class="guide-step">
+                <div class="step-num"><i class="bi bi-box-arrow-up"></i></div>
+                <div class="step-text">Ketuk tombol <b>Share</b> (kotak dengan panah ke atas) di bagian bawah layar.
+                </div>
+              </div>
+              <div class="guide-step">
+                <div class="step-num"><i class="bi bi-plus-square"></i></div>
+                <div class="step-text">Geser ke bawah dan pilih <b>"Tambah ke Layar Utama"</b>.</div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- PALING AKTIF MODAL -->
+    <div id="leaderboardScreen" class="fullscreen-overlay hidden">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold">Jamaah Paling Aktif</h6><button class="btn-close-custom"
+          onclick="closeFeatureModal('leaderboardScreen')"><i class="bi bi-x"></i></button>
+      </div>
+      <div class="overlay-body">
+        <div id="listPalingAktif" class="list-group">
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary spinner-border-sm"></div> Memuat data...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUM TERAKTIF MODAL -->
+    <div id="heatmapScreen" class="fullscreen-overlay hidden">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold">AUM Teraktif</h6><button class="btn-close-custom"
+          onclick="closeFeatureModal('heatmapScreen')"><i class="bi bi-x"></i></button>
+      </div>
+      <div class="overlay-body">
+        <div id="listAumTeraktif" class="list-group">
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary spinner-border-sm"></div> Memuat data...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAFTAR AUM MODAL -->
+    <div id="daftarAumScreen" class="fullscreen-overlay hidden">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold">Daftar AUM</h6><button class="btn-close-custom"
+          onclick="closeFeatureModal('daftarAumScreen')"><i class="bi bi-x"></i></button>
+      </div>
+      <div class="overlay-body">
+        <div class="alert alert-light border small text-center mb-3"><i class="bi bi-info-circle"></i> Daftar Amal Usaha
+          Muhammadiyah yang terdaftar.</div>
+        <div id="listDaftarAum" class="list-group">
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary spinner-border-sm"></div> Memuat data...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BADGE INFO MODAL -->
+    <div id="badgeInfoScreen" class="fullscreen-overlay hidden">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold">Lencana Pencapaian</h6><button class="btn-close-custom"
+          onclick="closeFeatureModal('badgeInfoScreen')"><i class="bi bi-x"></i></button>
+      </div>
+      <div class="overlay-body">
+        <div class="text-center mb-4 mt-3">
+          <h1 class="display-1 mb-2" id="badgeModalIcon">🎖️</h1>
+          <h5 class="fw-bold" id="badgeModalTitle">Lencana</h5>
+          <p class="text-muted small" id="badgeModalDesc">-</p>
+        </div>
+        <hr>
+        <h6 class="fw-bold mb-3">Tingkatan Lencana:</h6>
+        <div class="d-flex align-items-center mb-3">
+          <h3 class="m-0 me-3">🥉</h3>
+          <div><strong>Pencari Ilmu</strong>
+            <div class="small text-muted">Langkah awal yang baik, terus tingkatkan!</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center mb-3">
+          <h3 class="m-0 me-3">🥈</h3>
+          <div><strong>Penggiat Kajian</strong>
+            <div class="small text-muted">Anda semakin konsisten menuntut ilmu.</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center mb-3">
+          <h3 class="m-0 me-3">🥇</h3>
+          <div><strong>Aktivis Dakwah</strong>
+            <div class="small text-muted">Luar biasa! Separuh perjalanan telah dilalui dengan istiqomah.</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center mb-3">
+          <h3 class="m-0 me-3">💎</h3>
+          <div><strong>Teladan Istiqomah</strong>
+            <div class="small text-muted">MasyaAllah, Anda adalah teladan dalam memakmurkan majelis ilmu!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETAIL MODAL (Riwayat Individu / Anggota AUM) -->
+    <div id="detailScreen" class="fullscreen-overlay hidden" style="z-index: 1050;">
+      <div class="overlay-header">
+        <h6 class="m-0 fw-bold text-truncate" id="detailTitle" style="max-width: 250px;">Detail</h6>
+        <button class="btn-close-custom" onclick="closeFeatureModal('detailScreen')"><i class="bi bi-x"></i></button>
+      </div>
+      <div class="overlay-body">
+        <div id="listDetail" class="list-group">
+          <!-- Content -->
+        </div>
+      </div>
+    </div>
+
   </div>
 
-</div>
+  <script>
+    // --- KONFIGURASI URL SERVER ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyY74AHkvY7WOg3ZgN_Iq8joHRcmW9O6wvy_cq3LGiKZLgS7ZzMEjR411g9DSe5YcS3lg/exec";
+    const MAX_RADIUS = 500;
+    const DAFTAR_LOKASI = [
+      { nama: "Masjid Abdul Aziz (SMP Muhammadiyah 8 Kebakkramat)", lat: -7.520470615403366, lng: 110.9065007512984, start: 600, end: 730 },
+      { nama: "Gedung Dakwah PDM Karanganyar", lat: -7.586223863399417, lng: 110.91830297060768, start: 600, end: 730 },
+      { nama: "Masjid Al Mukarromah, Karanganyar", lat: -7.5991158597467505, lng: 110.95277542273423, start: 600, end: 730 },
+      { nama: "SMP Muhammadiyah 2 Karanganyar", lat: -7.59240065605104, lng: 110.95609234835774, start: 600, end: 730 },
+      { nama: "Masjid Raya Al Falah Sragen", lat: -7.42851997638584, lng: 111.01776973992412, start: 730, end: 900 },
+      { nama: "Kantor Desa Ngadiluwih, Matesih, Karanganyar", lat: -7.633272545502858, lng: 110.99996825526591, start: 600, end: 730 },
+      { nama: "Lokasi Testing", lat: -7.716564379562363, lng: 110.59027731779902, start: 600, end: 730 },
+      { nama: "Masjid Al Ikhlas Botok, Kerjo, Karanganyar", lat: -7.518997596395203, lng: 111.04124429999999, start: 600, end: 730 },
+      { nama: "SMP Muhammadiyah 3 Karangpandan", lat: -7.6205906058938355, lng: 111.06234704232911, start: 600, end: 730 },
+      { nama: "SMP Muhammadiyah 10 Surakarta", lat: -7.552680549665942, lng: 110.78133119965328, start: 600, end: 730 },
+      { nama: "Masjid Yamp - Jumapolo, Karanganyar", lat: -7.7049863364494815, lng: 111.00101258835446, start: 600, end: 730 },
+      { nama: "PPM Imam Syuhodo, Polokarto, Sukoharjo", lat: -7.622615604552016, lng: 110.89220351349366, start: 600, end: 730 },
+      { nama: "Masjid Al Mukarromah, Karanganyar", lat: -7.599104240456491, lng: 110.95243712436272, start: 600, end: 730 },
+      { nama: "MI Muhammadiyah Karanganyar", lat: -7.6032248341532735, lng: 110.95023672883546, start: 600, end: 730 },
+      { nama: "SMK Muhammadiyah 1 Gondangrejo", lat: -7.473988689857501, lng: 110.8076632018481, start: 600, end: 730 },
+      { nama: "SMP Muhammadiyah 9 Jaten", lat: -7.56493493777303, lng: 110.86863152827858, start: 600, end: 730 }
+    ];
 
-<script>
-  // --- KONFIGURASI URL SERVER ---
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAvmq-LQZdHDrlegLOVXo-IZsgx47aGdhDOQhN3Dlf3l79JFVNxiGdrdlpNRw7DkX0Aw/exec"; 
-  const MAX_RADIUS = 500; 
-  const DAFTAR_LOKASI = [
-     { nama: "Masjid Abdul Aziz (SMP Muhammadiyah 8 Kebakkramat)", lat: -7.520470615403366, lng: 110.9065007512984, start: 600, end: 730 },
-    { nama: "Gedung Dakwah PDM Karanganyar", lat: -7.586223863399417, lng: 110.91830297060768, start: 600, end: 730 },
-    { nama: "Masjid Al Mukarromah, Karanganyar", lat: -7.5991158597467505, lng: 110.95277542273423, start: 600, end: 730 },
-    { nama: "SMP Muhammadiyah 2 Karanganyar", lat: -7.59240065605104, lng: 110.95609234835774, start: 600, end: 730 },
-    { nama: "Masjid Raya Al Falah Sragen", lat: -7.42851997638584, lng: 111.01776973992412, start: 730, end: 900 },
-    { nama: "Kantor Desa Ngadiluwih, Matesih, Karanganyar", lat: -7.633272545502858, lng: 110.99996825526591, start: 600, end: 730 },
-    { nama: "Lokasi Testing", lat: -7.716564379562363, lng: 110.59027731779902, start: 600, end: 730 },
-    { nama: "Masjid Al Ikhlas Botok, Kerjo, Karanganyar", lat: -7.518997596395203, lng: 111.04124429999999, start: 600, end: 730 },
-    { nama: "SMP Muhammadiyah 3 Karangpandan", lat: -7.6205906058938355, lng: 111.06234704232911, start: 600, end: 730 },
-    { nama: "SMP Muhammadiyah 10 Surakarta", lat: -7.552680549665942, lng: 110.78133119965328, start: 600, end: 730 },
-    { nama: "Masjid Yamp - Jumapolo, Karanganyar", lat: -7.7049863364494815, lng: 111.00101258835446, start: 600, end: 730},
-    { nama: "PPM Imam Syuhodo, Polokarto, Sukoharjo", lat: -7.622615604552016, lng: 110.89220351349366, start: 600, end: 730},
-    { nama: "Masjid Al Mukarromah, Karanganyar", lat: -7.599104240456491, lng: 110.95243712436272, start: 600, end: 730},
-    { nama: "MI Muhammadiyah Karanganyar", lat: -7.6032248341532735, lng: 110.95023672883546, start: 600, end: 730},
-    { nama: "SMK Muhammadiyah 1 Gondangrejo", lat: -7.473988689857501, lng: 110.8076632018481, start: 600, end: 730},
-    { nama: "SMP Muhammadiyah 9 Jaten", lat: -7.56493493777303, lng: 110.86863152827858, start: 600, end: 730} 
-  ];
+    var CURRENT_USER = null;
+    var LIST_NAMA_DB = []; var LIST_AUM_DB = [];
+    var CURRENT_PICKER_TYPE = "";
+    var video = document.getElementById('camera');
+    var latUser = 0, lngUser = 0, lokasiString = "", jarakUser = 0, namaLokasiTerdekat = "";
+    var isAlreadyPresent = false, isTimeValid = false, isLocationValid = false;
+    var gpsErrorMsg = "";
+    var activeStartTime = 600;
+    var activeEndTime = 730;
 
-  var CURRENT_USER = null; 
-  var LIST_NAMA_DB = []; var LIST_AUM_DB = []; 
-  var CURRENT_PICKER_TYPE = ""; 
-  var video = document.getElementById('camera');
-  var latUser=0, lngUser=0, lokasiString="", jarakUser=0, namaLokasiTerdekat="";
-  var isAlreadyPresent=false, isTimeValid=false, isLocationValid=false;
-  var gpsErrorMsg = "";
-  var activeStartTime = 600; 
-  var activeEndTime = 730;
-  
-  // DATA GLOBAL UNTUK PDF
-  var reportData = [];
-  var userNBM = ""; 
+    // DATA GLOBAL UNTUK PDF
+    var reportData = [];
+    var userNBM = "";
 
-  window.onload = function() {
-    try {
-        checkSession(); 
-        loadDbOptions(); 
+    window.onload = function () {
+      try {
+        checkSession();
+        loadDbOptions();
         setInterval(validateButtonState, 1000);
-    } catch(e) { console.log(e); }
-  };
+      } catch (e) { console.log(e); }
+    };
 
-  // --- PDF GENERATOR FUNCTION ---
-  async function generatePDF() {
-    if(!CURRENT_USER || reportData.length === 0) {
+    // --- PDF GENERATOR FUNCTION ---
+    async function generatePDF() {
+      if (!CURRENT_USER || reportData.length === 0) {
         alert("Data riwayat kosong atau belum dimuat. Silakan tekan tombol cari terlebih dahulu.");
         return;
-    }
+      }
 
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Konfigurasi
-    const startY = 15;
-    const lineMargin = 10;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    
-    // 1. HEADER (KOP SURAT)
-    // Logo Muhammadiyah (Load Base64 or Image)
-    const imgLogo = new Image();
-    imgLogo.src = 'https://raw.githubusercontent.com/kangmrogram/pcmkebakkramat/refs/heads/main/icon-512.png';
-    
-    // Tunggu gambar load agar tidak blank
-    imgLogo.onload = function() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Konfigurasi
+      const startY = 15;
+      const lineMargin = 10;
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      // 1. HEADER (KOP SURAT)
+      // Logo Muhammadiyah (Load Base64 or Image)
+      const imgLogo = new Image();
+      imgLogo.src = 'https://raw.githubusercontent.com/kangmrogram/pcmkebakkramat/refs/heads/main/icon-512.png';
+
+      // Tunggu gambar load agar tidak blank
+      imgLogo.onload = function () {
         doc.addImage(imgLogo, 'PNG', 15, 10, 20, 20); // x, y, w, h
-        
+
         // Teks Kop Surat
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(14);
         doc.text("PIMPINAN CABANG MUHAMMADIYAH", 40, 18);
         doc.setFontSize(12);
         doc.text("KEBAKKRAMAT, KARANGANYAR", 40, 24);
-        
+
         // Alamat (Font Normal)
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(9);
         doc.text("Jl. Simo, Kebaksari 05/02 Kebak, Kebakkramat, Karanganyar, Jawa Tengah, 57762", 40, 30);
-        
+
         // Garis Pemisah
         doc.setLineWidth(0.5);
         doc.line(15, 35, pageWidth - 15, 35);
-        
+
         // 2. JUDUL LAPORAN & PERIODE
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(12);
         doc.text("LAPORAN PRESENSI PENGAJIAN AHAD PAGI", pageWidth / 2, 45, { align: "center" });
         doc.text("PCM KEBAKKRAMAT KARANGANYAR", pageWidth / 2, 51, { align: "center" });
-        
+
         // Periode Tanggal
         var tglAwal = document.getElementById('filterStart').value;
         var tglAkhir = document.getElementById('filterEnd').value;
         var periodeStr = "";
-        
-        if(tglAwal && tglAkhir) {
-            periodeStr = formatTanggalIndoSimple(tglAwal) + " s.d. " + formatTanggalIndoSimple(tglAkhir);
+
+        if (tglAwal && tglAkhir) {
+          periodeStr = formatTanggalIndoSimple(tglAwal) + " s.d. " + formatTanggalIndoSimple(tglAkhir);
         } else {
-            var today = new Date();
-            var firstDay = new Date(today.getFullYear(), 0, 1); // 1 Jan Tahun ini
-            periodeStr = formatTanggalIndoSimple(firstDay) + " s.d. " + formatTanggalIndoSimple(today);
+          var today = new Date();
+          var firstDay = new Date(today.getFullYear(), 0, 1); // 1 Jan Tahun ini
+          periodeStr = formatTanggalIndoSimple(firstDay) + " s.d. " + formatTanggalIndoSimple(today);
         }
-        
+
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(10);
         doc.text("Periode: " + periodeStr, pageWidth / 2, 57, { align: "center" });
-        
+
         // 3. IDENTITAS PENGGUNA (User Info)
         doc.text("Nama", 15, 70); doc.text(": " + CURRENT_USER.nama, 40, 70);
-        
+
         // Ambil NBM dari Profile (Fetch ulang atau simpan di user object jika ada)
         // Kita gunakan variabel global userNBM yang diambil saat loadProfile
-        var nbmText = userNBM ? userNBM : "-"; 
+        var nbmText = userNBM ? userNBM : "-";
         doc.text("NBM", 15, 75); doc.text(": " + nbmText, 40, 75);
-        
+
         doc.text("AUM", 15, 80); doc.text(": " + CURRENT_USER.aum, 40, 80);
-        
-        var statCount = document.getElementById('statCount').innerText; 
+
+        var statCount = document.getElementById('statCount').innerText;
         var statPercent = document.getElementById('statPercent').innerText;
         doc.text("Total Hadir", 15, 85); doc.text(": " + statCount + " (" + statPercent + ")", 40, 85);
-        
+
         // 4. TABEL PRESENSI (AutoTable)
         var tableBody = reportData.map((item, index) => [
-            index + 1,
-            item.tanggal,
-            item.jam,
-            item.lokasi.split('(')[0] // Ambil nama tempat saja
+          index + 1,
+          item.tanggal,
+          item.jam,
+          item.lokasi.split('(')[0] // Ambil nama tempat saja
         ]);
-        
+
         doc.autoTable({
-            startY: 92,
-            head: [['No', 'Hari/Tanggal', 'Jam', 'Lokasi']],
-            body: tableBody,
-            theme: 'grid',
-            headStyles: { fillColor: [15, 118, 110], textColor: 255, fontStyle: 'bold' }, // Warna Primary App
-            styles: { fontSize: 10, font: "Helvetica", cellPadding: 2 },
-            columnStyles: {
-                0: { cellWidth: 10, halign: 'center' },
-                1: { cellWidth: 50 },
-                2: { cellWidth: 30, halign: 'center' },
-                3: { cellWidth: 'auto' }
-            }
+          startY: 92,
+          head: [['No', 'Hari/Tanggal', 'Jam', 'Lokasi']],
+          body: tableBody,
+          theme: 'grid',
+          headStyles: { fillColor: [15, 118, 110], textColor: 255, fontStyle: 'bold' }, // Warna Primary App
+          styles: { fontSize: 10, font: "Helvetica", cellPadding: 2 },
+          columnStyles: {
+            0: { cellWidth: 10, halign: 'center' },
+            1: { cellWidth: 50 },
+            2: { cellWidth: 30, halign: 'center' },
+            3: { cellWidth: 'auto' }
+          }
         });
-        
+
         // 5. TANDA TANGAN (Footer)
         // Cek posisi Y terakhir setelah tabel
         let finalY = doc.lastAutoTable.finalY + 15;
-        
+
         // Cek jika halaman tidak cukup, tambah halaman baru
         if (finalY > 250) {
-            doc.addPage();
-            finalY = 20;
+          doc.addPage();
+          finalY = 20;
         }
-        
+
         var tglCetak = "Karanganyar, " + formatTanggalIndoSimple(new Date());
-        
+
         // Kiri: Ketua PCM
         doc.text("Mengetahui,", 15, finalY);
         doc.text("Ketua PCM Kebakkramat", 15, finalY + 5);
-        
+
         // Kanan: User
         doc.text(tglCetak, pageWidth - 60, finalY);
         doc.text("Pembuat,", pageWidth - 60, finalY + 5);
-        
+
         // Space Tanda Tangan
         doc.text("Ir. H. Paryono", 15, finalY + 30);
         doc.setFontSize(9);
         doc.text("NBM. 1120 7223 1460 777", 15, finalY + 34);
-        
+
         doc.setFontSize(10);
         doc.text(CURRENT_USER.nama, pageWidth - 60, finalY + 30);
         doc.setFontSize(9);
         doc.text("NBM. " + nbmText, pageWidth - 60, finalY + 34);
-        
+
         // Save PDF
         doc.save("Laporan_Presensi_" + CURRENT_USER.nama.replace(/\s+/g, '_') + ".pdf");
-    };
-    
-    // Handle error loading image
-    imgLogo.onerror = function() {
-        alert("Gagal memuat logo untuk PDF. Pastikan koneksi internet lancar.");
-    };
-  }
+      };
 
-  function formatTanggalIndoSimple(dateInput) {
-      if(!dateInput) return "";
+      // Handle error loading image
+      imgLogo.onerror = function () {
+        alert("Gagal memuat logo untuk PDF. Pastikan koneksi internet lancar.");
+      };
+    }
+
+    function formatTanggalIndoSimple(dateInput) {
+      if (!dateInput) return "";
       var d = new Date(dateInput);
       var bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
       return d.getDate() + " " + bulanIndo[d.getMonth()] + " " + d.getFullYear();
-  }
+    }
 
-  // --- SYSTEM FUNCTIONS ---
-  function toggleMenu() {
-    var menu = document.getElementById('mainMenu');
-    var backdrop = document.getElementById('menuBackdrop');
-    if (menu.classList.contains('show')) {
+    // --- SYSTEM FUNCTIONS ---
+    function toggleMenu() {
+      var menu = document.getElementById('mainMenu');
+      var backdrop = document.getElementById('menuBackdrop');
+      if (menu.classList.contains('show')) {
         menu.classList.remove('show');
         backdrop.classList.remove('show');
-    } else {
+      } else {
         menu.classList.add('show');
         backdrop.classList.add('show');
+      }
     }
-  }
 
-  function openPicker(type) {
-    CURRENT_PICKER_TYPE = type;
-    document.getElementById('pickerTitle').innerText = (type === 'nama') ? "Pilih Nama" : "Pilih Asal AUM";
-    document.getElementById('pickerSearch').value = "";
-    renderPickerList("");
-    document.getElementById('pickerModal').classList.remove('hidden');
-  }
-  function closePicker() { document.getElementById('pickerModal').classList.add('hidden'); }
-  
-  function renderPickerList(filter) {
-    var container = document.getElementById('pickerListContainer'); container.innerHTML = "";
-    var source = (CURRENT_PICKER_TYPE === 'nama') ? LIST_NAMA_DB : LIST_AUM_DB;
-    var filtered = source.filter(item => item.toLowerCase().includes(filter.toLowerCase()));
-    if (filtered.length === 0) { container.innerHTML = "<div class='text-center text-muted mt-3'>Tidak ditemukan</div>"; return; }
-    filtered.forEach(item => {
+    function openPicker(type) {
+      CURRENT_PICKER_TYPE = type;
+      document.getElementById('pickerTitle').innerText = (type === 'nama') ? "Pilih Nama" : "Pilih Asal AUM";
+      document.getElementById('pickerSearch').value = "";
+      renderPickerList("");
+      document.getElementById('pickerModal').classList.remove('hidden');
+    }
+    function closePicker() { document.getElementById('pickerModal').classList.add('hidden'); }
+
+    function renderPickerList(filter) {
+      var container = document.getElementById('pickerListContainer'); container.innerHTML = "";
+      var source = (CURRENT_PICKER_TYPE === 'nama') ? LIST_NAMA_DB : LIST_AUM_DB;
+      var filtered = source.filter(item => item.toLowerCase().includes(filter.toLowerCase()));
+      if (filtered.length === 0) { container.innerHTML = "<div class='text-center text-muted mt-3'>Tidak ditemukan</div>"; return; }
+      filtered.forEach(item => {
         var div = document.createElement('div'); div.className = "picker-item";
-        div.innerHTML = `<strong>${item}</strong>`; div.onclick = function() { selectPickerItem(item); };
+        div.innerHTML = `<strong>${item}</strong>`; div.onclick = function () { selectPickerItem(item); };
         container.appendChild(div);
-    });
-  }
-  function filterPicker() { renderPickerList(document.getElementById('pickerSearch').value); }
-  function selectPickerItem(value) {
-    if (CURRENT_PICKER_TYPE === 'nama') {
+      });
+    }
+    function filterPicker() { renderPickerList(document.getElementById('pickerSearch').value); }
+    function selectPickerItem(value) {
+      if (CURRENT_PICKER_TYPE === 'nama') {
         document.getElementById('regNama').value = value;
         document.getElementById('textRegNama').innerText = value;
         document.getElementById('textRegNama').classList.remove('picker-placeholder');
         document.getElementById('textRegNama').classList.add('picker-value');
-    } else {
+      } else {
         document.getElementById('regAum').value = value;
         document.getElementById('textRegAum').innerText = value;
         document.getElementById('textRegAum').classList.remove('picker-placeholder');
         document.getElementById('textRegAum').classList.add('picker-value');
-    }
-    closePicker();
-  }
-
-  function togglePassword(inputId, icon) {
-    var input = document.getElementById(inputId);
-    if(input.type === "password") { input.type = "text"; icon.classList.replace("bi-eye-slash", "bi-eye"); icon.classList.add("active"); } 
-    else { input.type = "password"; icon.classList.replace("bi-eye", "bi-eye-slash"); icon.classList.remove("active"); }
-  }
-
-  function validateUsername(input) {
-    input.value = input.value.toLowerCase();
-    var errorSpan = document.getElementById(input.id + 'Error');
-    if(input.value.includes(" ")) { if(errorSpan) { errorSpan.classList.remove('hidden'); input.parentElement.classList.add('error'); } } 
-    else { if(errorSpan) { errorSpan.classList.add('hidden'); input.parentElement.classList.remove('error'); } }
-  }
-
-  function getNearestLocationName(lat, lng) {
-    if(!lat || !lng) return "Lokasi Tidak Diketahui";
-    var closestName = "Lokasi Tidak Diketahui"; var minDist = Infinity;
-    DAFTAR_LOKASI.forEach(loc => { var d = calcDist(lat, lng, loc.lat, loc.lng); if(d < minDist) { minDist = d; closestName = loc.nama; } });
-    return closestName; 
-  }
-
-  function openInfoModal() { document.getElementById('infoModal').classList.remove('hidden'); }
-  function closeInfoModal() { document.getElementById('infoModal').classList.add('hidden'); }
-
-  async function openProfile() {
-    loading(true);
-    try {
-      let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getProfile', username: CURRENT_USER.username }) });
-      let res = await req.json(); loading(false);
-      if(res.status === 'success') {
-        var d = res.data;
-        // Simpan NBM untuk keperluan Report
-        userNBM = d.nbm || "-";
-        
-        document.getElementById('profNama').value = d.nama;
-        var selAum = document.getElementById('profAum'); selAum.innerHTML = "";
-        LIST_AUM_DB.forEach(a => { var opt = document.createElement('option'); opt.value = a; opt.text = a; if(a == d.aum) opt.selected = true; selAum.add(opt); });
-        document.getElementById('profJk').value = d.jk; document.getElementById('profNbm').value = d.nbm;
-        document.getElementById('profAlamat').value = d.alamat; document.getElementById('profTempat').value = d.tempat_lahir;
-        document.getElementById('profTgl').value = d.tgl_lahir; document.getElementById('profEmail').value = d.email;
-        document.getElementById('profHp').value = d.hp;
-        document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('profileScreen').classList.remove('hidden');
-      } else { alert(res.message); }
-    } catch(e) { loading(false); alert("Gagal: " + e); }
-  }
-
-  function closeProfile() { document.getElementById('profileScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }
-
-  async function saveProfile() {
-    var data = { username: CURRENT_USER.username, nama: document.getElementById('profNama').value, aum: document.getElementById('profAum').value, jk: document.getElementById('profJk').value, nbm: document.getElementById('profNbm').value, alamat: document.getElementById('profAlamat').value, tempat_lahir: document.getElementById('profTempat').value, tgl_lahir: document.getElementById('profTgl').value, email: document.getElementById('profEmail').value, hp: document.getElementById('profHp').value };
-    loading(true);
-    try {
-      let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', data: data }) });
-      let res = await req.json(); loading(false); alert(res.message);
-      if(res.status === 'success') {
-         CURRENT_USER.nama = data.nama; CURRENT_USER.aum = data.aum;
-         userNBM = data.nbm; // Update NBM lokal juga
-         localStorage.setItem("PCM_USER", JSON.stringify(CURRENT_USER));
-         document.getElementById('dashNama').innerText = data.nama; document.getElementById('dashAum').innerText = data.aum;
-         closeProfile();
       }
-    } catch(e) { loading(false); alert(e); }
-  }
+      closePicker();
+    }
 
-  function openChangePassword() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('passwordScreen').classList.remove('hidden'); }
-  function closeChangePassword() { document.getElementById('passwordScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }
-  
-  async function savePassword() {
-    var p1 = document.getElementById('passNew').value; var p2 = document.getElementById('passConfirm').value;
-    if(!p1 || p1 !== p2) return alert("Password tidak cocok / kosong");
-    loading(true);
-    try {
-      let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'changePassword', data: { username: CURRENT_USER.username, newPass: p1 } }) });
-      let res = await req.json(); loading(false); alert(res.message); if(res.status === 'success') { closeChangePassword(); doLogout(); }
-    } catch(e) { loading(false); alert(e); }
-  }
+    function togglePassword(inputId, icon) {
+      var input = document.getElementById(inputId);
+      if (input.type === "password") { input.type = "text"; icon.classList.replace("bi-eye-slash", "bi-eye"); icon.classList.add("active"); }
+      else { input.type = "password"; icon.classList.replace("bi-eye", "bi-eye-slash"); icon.classList.remove("active"); }
+    }
 
-  function validateButtonState() {
-    if(!CURRENT_USER) return;
-    var now = new Date(); var day = now.getDay(); var h = now.getHours(); var m = now.getMinutes(); var timeVal = h * 100 + m;
-    
-    if (day === 0 && timeVal >= activeStartTime && timeVal <= activeEndTime) {
-        isTimeValid = true; 
-    } else {
+    function validateUsername(input) {
+      input.value = input.value.toLowerCase();
+      var errorSpan = document.getElementById(input.id + 'Error');
+      if (input.value.includes(" ")) { if (errorSpan) { errorSpan.classList.remove('hidden'); input.parentElement.classList.add('error'); } }
+      else { if (errorSpan) { errorSpan.classList.add('hidden'); input.parentElement.classList.remove('error'); } }
+    }
+
+    function getNearestLocationName(lat, lng) {
+      if (!lat || !lng) return "Lokasi Tidak Diketahui";
+      var closestName = "Lokasi Tidak Diketahui"; var minDist = Infinity;
+      DAFTAR_LOKASI.forEach(loc => { var d = calcDist(lat, lng, loc.lat, loc.lng); if (d < minDist) { minDist = d; closestName = loc.nama; } });
+      return closestName;
+    }
+
+    function openInfoModal() { document.getElementById('infoModal').classList.remove('hidden'); }
+    function closeInfoModal() { document.getElementById('infoModal').classList.add('hidden'); }
+
+    async function openProfile() {
+      loading(true);
+      try {
+        let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getProfile', username: CURRENT_USER.username }) });
+        let res = await req.json(); loading(false);
+        if (res.status === 'success') {
+          var d = res.data;
+          // Simpan NBM untuk keperluan Report
+          userNBM = d.nbm || "-";
+
+          document.getElementById('profNama').value = d.nama;
+          var selAum = document.getElementById('profAum'); selAum.innerHTML = "";
+          LIST_AUM_DB.forEach(a => { var opt = document.createElement('option'); opt.value = a; opt.text = a; if (a == d.aum) opt.selected = true; selAum.add(opt); });
+          document.getElementById('profJk').value = d.jk; document.getElementById('profNbm').value = d.nbm;
+          document.getElementById('profAlamat').value = d.alamat; document.getElementById('profTempat').value = d.tempat_lahir;
+          document.getElementById('profTgl').value = d.tgl_lahir; document.getElementById('profEmail').value = d.email;
+          document.getElementById('profHp').value = d.hp;
+          document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('profileScreen').classList.remove('hidden');
+        } else { alert(res.message); }
+      } catch (e) { loading(false); alert("Gagal: " + e); }
+    }
+
+    function closeProfile() { document.getElementById('profileScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }
+
+    async function saveProfile() {
+      var data = { username: CURRENT_USER.username, nama: document.getElementById('profNama').value, aum: document.getElementById('profAum').value, jk: document.getElementById('profJk').value, nbm: document.getElementById('profNbm').value, alamat: document.getElementById('profAlamat').value, tempat_lahir: document.getElementById('profTempat').value, tgl_lahir: document.getElementById('profTgl').value, email: document.getElementById('profEmail').value, hp: document.getElementById('profHp').value };
+      loading(true);
+      try {
+        let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', data: data }) });
+        let res = await req.json(); loading(false); alert(res.message);
+        if (res.status === 'success') {
+          CURRENT_USER.nama = data.nama; CURRENT_USER.aum = data.aum;
+          userNBM = data.nbm; // Update NBM lokal juga
+          localStorage.setItem("PCM_USER", JSON.stringify(CURRENT_USER));
+          document.getElementById('dashGreetingName').innerText = data.nama.toLowerCase(); document.getElementById('dashGreetingAum').innerText = data.aum || "-";
+          closeProfile();
+        }
+      } catch (e) { loading(false); alert(e); }
+    }
+
+    function openChangePassword() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('passwordScreen').classList.remove('hidden'); }
+    function closeChangePassword() { document.getElementById('passwordScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }
+
+    async function savePassword() {
+      var p1 = document.getElementById('passNew').value; var p2 = document.getElementById('passConfirm').value;
+      if (!p1 || p1 !== p2) return alert("Password tidak cocok / kosong");
+      loading(true);
+      try {
+        let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'changePassword', data: { username: CURRENT_USER.username, newPass: p1 } }) });
+        let res = await req.json(); loading(false); alert(res.message); if (res.status === 'success') { closeChangePassword(); doLogout(); }
+      } catch (e) { loading(false); alert(e); }
+    }
+
+    function validateButtonState() {
+      if (!CURRENT_USER) return;
+      var now = new Date(); var day = now.getDay(); var h = now.getHours(); var m = now.getMinutes(); var timeVal = h * 100 + m;
+
+      if (day === 0 && timeVal >= activeStartTime && timeVal <= activeEndTime) {
+        isTimeValid = true;
+      } else {
         isTimeValid = false;
-    }
-    
-    var formatTime = (num) => {
-        var s = num.toString().padStart(3, '0');
-        if(num < 1000) s = "0" + num;
-        return s.substring(0, 2) + ":" + s.substring(2);
-    };
-
-    var btn = document.getElementById('btnStartAbsen'); var msg = document.getElementById('dashboardMsg');
-    btn.classList.remove('btn-primary', 'btn-secondary'); btn.classList.remove('btn-danger'); msg.style.display = 'none'; msg.className = "";
-    
-    if (isAlreadyPresent) { 
-        btn.disabled = true; btn.innerHTML = "<i class='bi bi-check2-circle'></i> SUDAH PRESENSI"; btn.classList.add('btn-secondary'); 
-    }
-    else if (!isTimeValid) { 
-        btn.disabled = true; btn.innerHTML = "<i class='bi bi-clock-history'></i> PRESENSI DITUTUP"; btn.classList.add('btn-secondary'); 
-        msg.innerHTML = `<b>Jadwal Kajian Di Sini:</b><br>Ahad ${formatTime(activeStartTime)} - ${formatTime(activeEndTime)} WIB.`; 
-        msg.style.display = 'block'; 
-    }
-    else if (gpsErrorMsg !== "") { 
-        btn.disabled = true; btn.innerHTML = "<i class='bi bi-geo-alt'></i> AKTIFKAN GPS"; btn.classList.add('btn-secondary'); msg.innerHTML = `<i class="bi bi-exclamation-triangle"></i> <b>${gpsErrorMsg}</b><br>Mohon aktifkan lokasi.`; msg.style.display = 'block'; msg.classList.add('msg-danger'); 
-    }
-    else if (latUser === 0 && lngUser === 0) { 
-        btn.disabled = true; btn.innerHTML = "<div class='spinner-border spinner-border-sm'></div> Mencari GPS..."; btn.classList.add('btn-secondary'); 
-    }
-    else if (!isLocationValid) { 
-        btn.disabled = true; btn.innerHTML = "<i class='bi bi-geo-alt'></i> LOKASI TIDAK SESUAI"; btn.classList.add('btn-secondary'); msg.innerHTML = "<b>Anda jauh dari lokasi kajian.</b><br>Silakan mendekat."; msg.style.display = 'block'; 
-    }
-    else { 
-        btn.disabled = false; btn.innerHTML = '<i class="bi bi-fingerprint" style="font-size:1.2rem;"></i> PRESENSI KAJIAN'; btn.classList.add('btn-primary'); 
-    }
-  }
-
-  async function loadDashboardData() {
-    var start = document.getElementById('filterStart').value;
-    var end = document.getElementById('filterEnd').value;
-    try {
-      let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getReport', nama: CURRENT_USER.nama, start: start, end: end })});
-      let res = await req.json();
-      if(res.fotoTerbaru) { document.getElementById('dashFoto').src = "data:image/png;base64," + res.fotoTerbaru; document.getElementById('dashFoto').classList.remove('hidden'); document.getElementById('photoContainer').classList.add('hidden'); } 
-      else { document.getElementById('photoContainer').innerHTML = "Belum Ada Foto"; }
-      
-      document.getElementById('dashLastDate').innerText = res.lastPresensi;
-      
-      if(res.stats) { document.getElementById('statCount').innerText = res.stats.userTotal + " / " + res.stats.globalTotal; document.getElementById('statPercent').innerText = res.stats.percent + "%"; }
-      
-      // SIMPAN DATA UNTUK PDF
-      reportData = res.history;
-      
-      checkTodayStatus(res.history); renderHistory(res.history);
-      
-      // Background load user details for NBM
-      if(!userNBM) {
-          fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getProfile', username: CURRENT_USER.username }) })
-          .then(r => r.json()).then(d => { if(d.status==='success') userNBM = d.data.nbm; });
       }
 
-    } catch(e) {}
-  }
+      var formatTime = (num) => {
+        var s = num.toString().padStart(3, '0');
+        if (num < 1000) s = "0" + num;
+        return s.substring(0, 2) + ":" + s.substring(2);
+      };
 
-  function checkTodayStatus(history) {
-    var today = new Date(); isAlreadyPresent = false;
-    if(history.length > 0) {
-      var lastRaw = new Date(history[0].tanggalRaw);
-      if(lastRaw.getDate() === today.getDate() && lastRaw.getMonth() === today.getMonth() && lastRaw.getFullYear() === today.getFullYear()) isAlreadyPresent = true;
+      var btn = document.getElementById('btnStartAbsen'); var msg = document.getElementById('dashboardMsg');
+      btn.classList.remove('btn-primary', 'btn-secondary'); btn.classList.remove('btn-danger'); msg.style.display = 'none'; msg.className = "";
+
+      if (isAlreadyPresent) {
+        btn.disabled = true; btn.innerHTML = "<i class='bi bi-check2-circle'></i> SUDAH PRESENSI"; btn.classList.add('btn-secondary');
+      }
+      else if (!isTimeValid) {
+        btn.disabled = true; btn.innerHTML = "<i class='bi bi-clock-history'></i> PRESENSI DITUTUP"; btn.classList.add('btn-secondary');
+        msg.innerHTML = `<b>Jadwal Kajian Di Sini:</b><br>Ahad ${formatTime(activeStartTime)} - ${formatTime(activeEndTime)} WIB.`;
+        msg.style.display = 'block';
+      }
+      else if (gpsErrorMsg !== "") {
+        btn.disabled = true; btn.innerHTML = "<i class='bi bi-geo-alt'></i> AKTIFKAN GPS"; btn.classList.add('btn-secondary'); msg.innerHTML = `<i class="bi bi-exclamation-triangle"></i> <b>${gpsErrorMsg}</b><br>Mohon aktifkan lokasi.`; msg.style.display = 'block'; msg.classList.add('msg-danger');
+      }
+      else if (latUser === 0 && lngUser === 0) {
+        btn.disabled = true; btn.innerHTML = "<div class='spinner-border spinner-border-sm'></div> Mencari GPS..."; btn.classList.add('btn-secondary');
+      }
+      else if (!isLocationValid) {
+        btn.disabled = true; btn.innerHTML = "<i class='bi bi-geo-alt'></i> LOKASI TIDAK SESUAI"; btn.classList.add('btn-secondary'); msg.innerHTML = "<b>Anda jauh dari lokasi kajian.</b><br>Silakan mendekat."; msg.style.display = 'block';
+      }
+      else {
+        btn.disabled = false; btn.innerHTML = '<i class="bi bi-fingerprint" style="font-size:1.2rem;"></i> PRESENSI KAJIAN'; btn.classList.add('btn-primary');
+      }
     }
-    validateButtonState();
-  }
 
-  function renderHistory(list) {
-    var c = document.getElementById('historyList'); c.innerHTML = "";
-    if(list.length === 0) { c.innerHTML = "<div class='text-center small text-muted'>Belum ada riwayat.</div>"; return; }
-    list.forEach(i => { 
+    async function loadDashboardData() {
+      var start = document.getElementById('filterStart').value;
+      var end = document.getElementById('filterEnd').value;
+      try {
+        let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getReport', nama: CURRENT_USER.nama, start: start, end: end }) });
+        let res = await req.json();
+        if (CURRENT_USER && CURRENT_USER.nama) {
+          document.getElementById('dashGreetingName').innerText = CURRENT_USER.nama.toLowerCase();
+          document.getElementById('dashGreetingAum').innerText = CURRENT_USER.aum || "-";
+
+          let hour = new Date().getHours();
+          let timeG = "Semangat Malam";
+          if (hour < 10) timeG = "Semangat Pagi";
+          else if (hour < 15) timeG = "Semangat Siang";
+          else if (hour < 18) timeG = "Semangat Sore";
+          document.getElementById('dashGreetingTime').innerText = "Assalamu'alaikum, " + timeG;
+        }
+
+        document.getElementById('dashLastDate').innerText = res.lastPresensi;
+
+        if (res.stats) {
+          document.getElementById('statCountText').innerText = res.stats.userTotal + " dari " + res.stats.globalTotal;
+          document.getElementById('statPercentText').innerText = res.stats.percent + "%";
+
+          setTimeout(() => { document.getElementById('statProgressBar').style.width = res.stats.percent + "%"; }, 100);
+
+          let streakText = "Yuk rajin ikut kajian!";
+          if (res.stats.percent >= 80) streakText = "Istiqomah: Sangat Aktif";
+          else if (res.stats.percent >= 50) streakText = "Terus Tingkatkan Kehadiran";
+          document.getElementById('dashStreak').innerHTML = `<i class="bi bi-fire text-warning"></i> <span>${streakText}</span>`;
+
+          let badgeIcon = "🥉"; let badgeTitle = "Pencari Ilmu"; let badgeDesc = "Langkah awal yang baik, terus tingkatkan!";
+          if (res.stats.percent >= 75) { badgeIcon = "💎"; badgeTitle = "Teladan Istiqomah"; badgeDesc = "MasyaAllah, Anda adalah teladan dalam memakmurkan majelis ilmu!"; }
+          else if (res.stats.percent >= 50) { badgeIcon = "🥇"; badgeTitle = "Aktivis Dakwah"; badgeDesc = "Luar biasa! Separuh perjalanan telah dilalui dengan istiqomah."; }
+          else if (res.stats.percent >= 25) { badgeIcon = "🥈"; badgeTitle = "Penggiat Kajian"; badgeDesc = "Anda semakin konsisten menuntut ilmu."; }
+
+          let lencanaEl = document.getElementById('dashBadgeLencana');
+          if (lencanaEl) { lencanaEl.innerText = badgeIcon; lencanaEl.style.display = "inline-block"; }
+
+          let modalIcon = document.getElementById('badgeModalIcon');
+          if (modalIcon) {
+            modalIcon.innerText = badgeIcon;
+            document.getElementById('badgeModalTitle').innerText = badgeTitle;
+            document.getElementById('badgeModalDesc').innerText = badgeDesc;
+          }
+        }
+
+        // SIMPAN DATA UNTUK PDF
+        reportData = res.history;
+
+        checkTodayStatus(res.history); renderHistory(res.history);
+
+        // Background load user details for NBM
+        if (!userNBM) {
+          fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getProfile', username: CURRENT_USER.username }) })
+            .then(r => r.json()).then(d => { if (d.status === 'success') userNBM = d.data.nbm; });
+        }
+
+        // Muat Data Ranking di Latar Belakang
+        loadRankingData();
+
+      } catch (e) { }
+    }
+
+    let globalRankingData = null;
+
+    async function loadRankingData() {
+      try {
+        let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getRanking' }) });
+        let res = await req.json();
+        if (res.status === 'success') {
+          globalRankingData = res.data;
+          renderPalingAktif(res.data.topUsers);
+          renderAumTeraktif(res.data.topAums);
+          renderDaftarAum(res.data.daftarAum);
+        }
+      } catch (e) {
+        console.error("Gagal memuat ranking:", e);
+      }
+    }
+
+    function renderPalingAktif(users) {
+      let c = document.getElementById('listPalingAktif');
+      if (users.length === 0) { c.innerHTML = "<div class='text-center small text-muted py-3'>Belum ada data.</div>"; return; }
+      let html = "";
+      users.forEach((u, i) => {
+        let medal = "";
+        if (i === 0) medal = "🥇"; else if (i === 1) medal = "🥈"; else if (i === 2) medal = "🥉"; else medal = `<span style="display:inline-block; width:24px; text-align:center; font-weight:bold; color:#64748b;">${i + 1}</span>`;
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center" style="border-radius:12px; margin-bottom:8px; border:1px solid #e2e8f0; border-left:4px solid ${i < 3 ? 'var(--primary)' : '#cbd5e1'};">
+              <div class="d-flex align-items-center gap-3">
+                  <div style="font-size:1.3rem;">${medal}</div>
+                  <div><div class="fw-bold text-dark text-capitalize">${u.nama.toLowerCase()}</div><div class="small text-muted" style="font-size:0.75rem;"><i class="bi bi-geo-alt-fill"></i> ${u.aum}</div></div>
+              </div>
+              <div class="badge bg-primary rounded-pill px-3 py-2" style="cursor:pointer;" onclick="showUserDetail(${i})">${u.count}x <i class="bi bi-chevron-right ms-1"></i></div>
+          </div>`;
+      });
+      c.innerHTML = html;
+    }
+
+    function renderAumTeraktif(aums) {
+      let c = document.getElementById('listAumTeraktif');
+      if (aums.length === 0) { c.innerHTML = "<div class='text-center small text-muted py-3'>Belum ada data.</div>"; return; }
+      let html = "";
+      aums.forEach((a, i) => {
+        let medal = "";
+        if (i === 0) medal = "🏆"; else if (i === 1) medal = "🥈"; else if (i === 2) medal = "🥉"; else medal = `<span style="display:inline-block; width:24px; text-align:center; font-weight:bold; color:#64748b;">${i + 1}</span>`;
+        html += `<div class="list-group-item d-flex justify-content-between align-items-center" style="border-radius:12px; margin-bottom:8px; border:1px solid #e2e8f0;">
+              <div class="d-flex align-items-center gap-3">
+                  <div style="font-size:1.3rem;">${medal}</div>
+                  <div>
+                      <div class="fw-bold text-dark">${a.aum}</div>
+                      <div class="small text-muted" style="font-size:0.75rem;"><i class="bi bi-people-fill text-info"></i> ${a.memberList ? a.memberList.length : 0} Jamaah</div>
+                  </div>
+              </div>
+              <div class="badge bg-success rounded-pill px-3 py-2" style="cursor:pointer;" onclick="showAumDetail(${i})">${a.count}x <i class="bi bi-chevron-right ms-1"></i></div>
+          </div>`;
+      });
+      c.innerHTML = html;
+    }
+
+    function showUserDetail(index) {
+      if (!globalRankingData) return;
+      let user = globalRankingData.topUsers[index];
+      if (!user) return;
+
+      document.getElementById('detailTitle').innerText = user.nama;
+      let c = document.getElementById('listDetail');
+
+      if (!user.history || user.history.length === 0) {
+        c.innerHTML = "<div class='text-center small text-muted py-3'>Detail belum tersedia. Silakan update Backend GAS Anda.</div>";
+      } else {
+        // Urutkan riwayat dari yang paling baru
+        if (user.history.length > 0 && typeof user.history[0] === 'object') {
+          user.history.sort((a, b) => b.tglRaw - a.tglRaw);
+        }
+
+        let html = `<div class="alert alert-light border small text-center mb-3">
+           Total Kehadiran: <strong>${user.count}x</strong><br>
+           <span class="text-muted" style="font-size:0.75rem;"><i class="bi bi-building"></i> ${user.aum}</span>
+        </div>`;
+        user.history.forEach(item => {
+          if (typeof item === 'string') {
+            html += `<div class="list-group-item py-2" style="border-radius:8px; margin-bottom:4px; font-size:0.85rem;">
+                <i class="bi bi-calendar-check me-2 text-primary"></i> ${item}
+              </div>`;
+          } else {
+            html += `<div class="list-group-item py-2" style="border-radius:8px; margin-bottom:4px; font-size:0.85rem;">
+                <div class="fw-bold text-dark"><i class="bi bi-calendar-check me-1 text-primary"></i> ${item.tglStr}</div>
+                <div class="text-muted" style="font-size:0.75rem; margin-top:2px;"><i class="bi bi-clock me-1 text-warning"></i> ${item.waktu}</div>
+                <div class="text-muted text-truncate" style="font-size:0.75rem; margin-top:2px;"><i class="bi bi-geo-alt-fill me-1 text-danger"></i> ${item.lokasi}</div>
+              </div>`;
+          }
+        });
+        c.innerHTML = html;
+      }
+
+      document.getElementById('detailScreen').classList.remove('hidden');
+    }
+
+    function showAumDetail(index) {
+      if (!globalRankingData) return;
+      let aum = globalRankingData.topAums[index];
+      if (!aum) return;
+
+      document.getElementById('detailTitle').innerText = aum.aum;
+      let c = document.getElementById('listDetail');
+
+      if (!aum.memberList || aum.memberList.length === 0) {
+        c.innerHTML = "<div class='text-center small text-muted py-3'>Detail belum tersedia. Silakan update Backend GAS Anda.</div>";
+      } else {
+        let html = `<div class="alert alert-light border small text-center mb-3">
+            Total Kehadiran Jamaah: <strong>${aum.count}x</strong><br>
+            Jumlah Anggota Aktif: <strong>${aum.memberList.length}</strong> Orang
+        </div>`;
+        aum.memberList.forEach((m, idx) => {
+          html += `<div class="list-group-item d-flex justify-content-between align-items-center py-2" style="border-radius:8px; margin-bottom:4px; font-size:0.85rem;">
+                <div class="text-truncate" style="max-width:75%;"><span class="fw-bold me-2" style="color:#64748b;">${idx + 1}.</span> <span class="text-capitalize">${m.nama.toLowerCase()}</span></div>
+                <div class="badge bg-secondary rounded-pill">${m.count}x</div>
+              </div>`;
+        });
+        c.innerHTML = html;
+      }
+
+      document.getElementById('detailScreen').classList.remove('hidden');
+    }
+
+    function renderDaftarAum(daftar) {
+      let c = document.getElementById('listDaftarAum');
+      if (daftar.length === 0) { c.innerHTML = "<div class='text-center small text-muted py-3'>Belum ada data.</div>"; return; }
+      let html = `<div class="alert alert-light border small text-center mb-3"><i class="bi bi-info-circle text-primary"></i> Total AUM Terdaftar: <strong>${daftar.length}</strong></div>`;
+      daftar.forEach(a => {
+        html += `<div class="list-group-item" style="border-radius:12px; margin-bottom:6px; border:1px solid #e2e8f0; font-weight:500; color:#334155;"><i class="bi bi-building me-2 text-primary"></i> ${a}</div>`;
+      });
+      c.innerHTML = html;
+    }
+
+    let historyPage = 1;
+    const historyPerPage = 5;
+    let currentHistoryList = [];
+
+    function checkTodayStatus(history) {
+      var today = new Date(); isAlreadyPresent = false;
+      if (history.length > 0) {
+        var lastRaw = new Date(history[0].tanggalRaw);
+        if (lastRaw.getDate() === today.getDate() && lastRaw.getMonth() === today.getMonth() && lastRaw.getFullYear() === today.getFullYear()) isAlreadyPresent = true;
+      }
+      validateButtonState();
+    }
+
+    function renderHistory(list) {
+      currentHistoryList = list;
+      historyPage = 1;
+      displayHistoryPage();
+    }
+
+    function displayHistoryPage() {
+      var c = document.getElementById('historyList'); c.innerHTML = "";
+      var pagination = document.getElementById('historyPagination');
+      if (currentHistoryList.length === 0) {
+        c.innerHTML = "<div class='text-center small text-muted'>Belum ada riwayat.</div>";
+        pagination.style.setProperty("display", "none", "important");
+        return;
+      }
+
+      var startIdx = (historyPage - 1) * historyPerPage;
+      var endIdx = Math.min(startIdx + historyPerPage, currentHistoryList.length);
+      var pageList = currentHistoryList.slice(startIdx, endIdx);
+
+      pageList.forEach(i => {
         var displayName = i.lokasi;
         var coordsMatch = i.lokasi.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
-        if (coordsMatch && coordsMatch.length === 3) { displayName = getNearestLocationName(parseFloat(coordsMatch[1]), parseFloat(coordsMatch[2])); } 
-        else { if(displayName.includes('(')) displayName = displayName.split('(')[0].trim(); }
+        if (coordsMatch && coordsMatch.length === 3) { displayName = getNearestLocationName(parseFloat(coordsMatch[1]), parseFloat(coordsMatch[2])); }
+        else { if (displayName.includes('(')) displayName = displayName.split('(')[0].trim(); }
         var html = `<div class="history-item"><div><div class="hist-date">${i.tanggal}</div><div class="hist-loc"><i class="bi bi-geo-alt-fill"></i> ${displayName}</div></div><div class="badge bg-light text-dark border">${i.jam}</div></div>`;
-        c.innerHTML += html; 
-    });
-  }
+        c.innerHTML += html;
+      });
 
-  function formatTanggalIndoJS(d) {
-    var h=["Ahad","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"]; var b=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-    return h[d.getDay()] + ", " + d.getDate() + " " + b[d.getMonth()] + " " + d.getFullYear();
-  }
+      var totalPages = Math.ceil(currentHistoryList.length / historyPerPage);
+      if (totalPages > 1) {
+        pagination.style.setProperty("display", "flex", "important");
+        document.getElementById('historyPageInfo').innerText = "Hal " + historyPage + " dari " + totalPages;
+        document.getElementById('btnPrevHistory').disabled = (historyPage === 1);
+        document.getElementById('btnNextHistory').disabled = (historyPage === totalPages);
+      } else {
+        pagination.style.setProperty("display", "none", "important");
+      }
+    }
 
-  async function doLogin() {
-    var u=document.getElementById('loginUser').value; var p=document.getElementById('loginPass').value;
-    if(!u||!p) return alert("Isi data");
-    if(u.includes(" ")) return alert("Username tidak boleh ada spasi");
-    loading(true);
-    try {
-      let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'login', data: { username: u, password: p } }) });
-      let res = await req.json(); loading(false);
-      if(res.status==='success') {
-        CURRENT_USER = { username: res.username, nama: res.nama, aum: res.aum, role: res.role }; 
-        localStorage.setItem("PCM_USER", JSON.stringify(CURRENT_USER)); showDashboard();
-        if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, {enableHighAccuracy:true});
-      } else alert(res.message);
-    } catch(e) { loading(false); alert(e); }
-  }
+    function changeHistoryPage(dir) {
+      historyPage += dir;
+      displayHistoryPage();
+    }
 
-  async function doRegister() {
-    var n=document.getElementById('regNama').value; var a=document.getElementById('regAum').value; var u=document.getElementById('regUser').value; var p=document.getElementById('regPass').value;
-    if(!n||!a||!u||!p) return alert("Lengkapi data");
-    if(u.includes(" ")) return alert("Username tidak boleh ada spasi");
-    loading(true);
-    try {
-      let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'register', data: { username: u, password: p, nama: n, aum: a } }) });
-      let res = await req.json(); loading(false); alert(res.message); if(res.status==='success') showLogin();
-    } catch(e) { loading(false); alert(e); }
-  }
+    function formatTanggalIndoJS(d) {
+      var h = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]; var b = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      return h[d.getDay()] + ", " + d.getDate() + " " + b[d.getMonth()] + " " + d.getFullYear();
+    }
 
-  async function kirimAbsen() {
-    var kes = document.getElementById('kesimpulan').value; if(!kes) return alert("Isi kesimpulan");
-    loading(true);
-    var cvs = document.getElementById('canvas'); cvs.width = video.videoWidth; cvs.height = video.videoHeight;
-    var ctx = cvs.getContext('2d'); ctx.save(); ctx.translate(cvs.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, 0, 0); ctx.restore();
-    var d = new Date(); var dateStr = formatTanggalIndoJS(d); var timeStr = d.toLocaleTimeString('id-ID', {hour12:false})+" WIB";
-    ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0, cvs.height - 80, cvs.width, 80);
-    ctx.font = "bold 16px sans-serif"; ctx.fillStyle = "white"; 
-    ctx.fillText(dateStr + " " + timeStr, 20, cvs.height - 50); ctx.fillText(namaLokasiTerdekat + " ("+jarakUser+"m)", 20, cvs.height - 25);
-    var base64 = cvs.toDataURL("image/png").replace(/^data:image\/(png|jpg);base64,/, "");
-    try {
-      let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'savePresensi', data: { nama: CURRENT_USER.nama, aum: CURRENT_USER.aum, kegiatan: "Pengajian - "+dateStr, kesimpulan: kes, lokasiString: lokasiString, lat: latUser, lng: lngUser, image: base64 } }) });
-      let res = await req.json(); loading(false); alert(res.message); if(res.status==='success') { closePresensiMode(); loadDashboardData(); }
-    } catch(e) { loading(false); alert(e); }
-  }
+    async function doLogin() {
+      var u = document.getElementById('loginUser').value; var p = document.getElementById('loginPass').value;
+      if (!u || !p) return alert("Isi data");
+      if (u.includes(" ")) return alert("Username tidak boleh ada spasi");
+      loading(true);
+      try {
+        let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'login', data: { username: u, password: p } }) });
+        let res = await req.json(); loading(false);
+        if (res.status === 'success') {
+          CURRENT_USER = { username: res.username, nama: res.nama, aum: res.aum, role: res.role };
+          localStorage.setItem("PCM_USER", JSON.stringify(CURRENT_USER)); showDashboard();
+          if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
+        } else alert(res.message);
+      } catch (e) { loading(false); alert(e); }
+    }
 
-  function checkSession() { var stored = localStorage.getItem("PCM_USER"); if (stored) { CURRENT_USER = JSON.parse(stored); showDashboard(); } else showLogin(); }
-  function showLogin() { 
-      document.getElementById('authScreen').classList.remove('hidden'); 
-      document.getElementById('homeScreen').classList.add('hidden'); 
-      document.getElementById('formLogin').classList.remove('hidden'); 
-      document.getElementById('formRegister').classList.add('hidden'); 
-  }
-  function showRegister() { document.getElementById('formLogin').classList.add('hidden'); document.getElementById('formRegister').classList.remove('hidden'); }
-  
-  function showDashboard() { 
-      document.getElementById('authScreen').classList.add('hidden'); 
+    async function doRegister() {
+      var n = document.getElementById('regNama').value; var a = document.getElementById('regAum').value; var u = document.getElementById('regUser').value; var p = document.getElementById('regPass').value;
+      if (!n || !a || !u || !p) return alert("Lengkapi data");
+      if (u.includes(" ")) return alert("Username tidak boleh ada spasi");
+      loading(true);
+      try {
+        let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'register', data: { username: u, password: p, nama: n, aum: a } }) });
+        let res = await req.json(); loading(false); alert(res.message); if (res.status === 'success') showLogin();
+      } catch (e) { loading(false); alert(e); }
+    }
+
+    async function kirimAbsen() {
+      var kes = document.getElementById('kesimpulan').value; if (!kes) return alert("Isi kesimpulan");
+      loading(true);
+      var cvs = document.getElementById('canvas'); cvs.width = video.videoWidth; cvs.height = video.videoHeight;
+      var ctx = cvs.getContext('2d'); ctx.save(); ctx.translate(cvs.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, 0, 0); ctx.restore();
+      var d = new Date(); var dateStr = formatTanggalIndoJS(d); var timeStr = d.toLocaleTimeString('id-ID', { hour12: false }) + " WIB";
+      ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0, cvs.height - 80, cvs.width, 80);
+      ctx.font = "bold 16px sans-serif"; ctx.fillStyle = "white";
+      ctx.fillText(dateStr + " " + timeStr, 20, cvs.height - 50); ctx.fillText(namaLokasiTerdekat + " (" + jarakUser + "m)", 20, cvs.height - 25);
+      var base64 = cvs.toDataURL("image/png").replace(/^data:image\/(png|jpg);base64,/, "");
+      try {
+        let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'savePresensi', data: { nama: CURRENT_USER.nama, aum: CURRENT_USER.aum, kegiatan: "Pengajian - " + dateStr, kesimpulan: kes, lokasiString: lokasiString, lat: latUser, lng: lngUser, image: base64 } }) });
+        let res = await req.json(); loading(false); alert(res.message); if (res.status === 'success') { closePresensiMode(); loadDashboardData(); }
+      } catch (e) { loading(false); alert(e); }
+    }
+
+    function checkSession() { var stored = localStorage.getItem("PCM_USER"); if (stored) { CURRENT_USER = JSON.parse(stored); showDashboard(); } else showLogin(); }
+    function showLogin() {
+      document.getElementById('authScreen').classList.remove('hidden');
+      document.getElementById('homeScreen').classList.add('hidden');
+      document.getElementById('formLogin').classList.remove('hidden');
+      document.getElementById('formRegister').classList.add('hidden');
+    }
+    function showRegister() { document.getElementById('formLogin').classList.add('hidden'); document.getElementById('formRegister').classList.remove('hidden'); }
+
+    function showDashboard() {
+      document.getElementById('authScreen').classList.add('hidden');
       document.getElementById('homeScreen').classList.remove('hidden');
-      document.getElementById('dashNama').innerText = CURRENT_USER.nama;
-      document.getElementById('dashAum').innerText = CURRENT_USER.aum;
+      document.getElementById('dashGreetingName').innerText = CURRENT_USER.nama.toLowerCase();
+      document.getElementById('dashGreetingAum').innerText = CURRENT_USER.aum || "-";
       renderMenu();
-      loadDashboardData(); 
-      if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, {enableHighAccuracy:true});
-  }
+      loadDashboardData();
+      if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
+    }
 
-  function renderMenu() {
-    var role = CURRENT_USER.role || 'karyawan'; 
-    var menuHTML = '';
+    function renderMenu() {
+      var role = CURRENT_USER.role || 'karyawan';
+      var menuHTML = '';
 
-    menuHTML += `
+      menuHTML += `
     <li class="menu-item" onclick="openProfile(); toggleMenu()">
         <div class="menu-icon"><i class="bi bi-person-circle"></i></div>
         <div class="menu-text">Profil Saya</div><i class="bi bi-chevron-right menu-chevron"></i>
@@ -785,7 +1899,7 @@
         <div class="menu-text">Ganti Password</div><i class="bi bi-chevron-right menu-chevron"></i>
     </li>`;
 
-    if (role === 'admin') {
+      if (role === 'admin') {
         menuHTML += `
         <li class="menu-item" onclick="window.location.href='admin.html'">
             <div class="menu-icon" style="background:#dbeafe; color:#1e40af"><i class="bi bi-calendar-plus-fill"></i></div>
@@ -795,17 +1909,17 @@
             <div class="menu-icon" style="background:#dcfce7; color:#15803d"><i class="bi bi-camera-fill"></i></div>
             <div class="menu-text">Presensi Kegiatan</div><i class="bi bi-chevron-right menu-chevron"></i>
         </li>`;
-    }
+      }
 
-    if (role === 'pengurus') {
+      if (role === 'pengurus') {
         menuHTML += `
         <li class="menu-item" onclick="window.location.href='presensi.html'">
             <div class="menu-icon" style="background:#fce7f3; color:#9d174d"><i class="bi bi-camera-fill"></i></div>
             <div class="menu-text">Presensi Kegiatan</div><i class="bi bi-chevron-right menu-chevron"></i>
         </li>`;
-    }
+      }
 
-    menuHTML += `
+      menuHTML += `
     <li class="menu-item" onclick="openInfoModal(); toggleMenu()">
         <div class="menu-icon"><i class="bi bi-question-circle-fill"></i></div>
         <div class="menu-text">Panduan & Instalasi</div><i class="bi bi-chevron-right menu-chevron"></i>
@@ -815,70 +1929,81 @@
         <div class="menu-text">Keluar Aplikasi</div>
     </li>`;
 
-    document.getElementById('menuListContainer').innerHTML = menuHTML;
-  }
-  
-  function doLogout() { localStorage.removeItem("PCM_USER"); CURRENT_USER = null; showLogin(); }
-  function openPresensiMode() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('presensiScreen').classList.remove('hidden'); if(navigator.mediaDevices) navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}}).then(s=>video.srcObject=s); if(navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, {enableHighAccuracy:true}); }
-  function closePresensiMode() { if(video.srcObject) video.srcObject.getTracks().forEach(t=>t.stop()); document.getElementById('presensiScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }
-  
-  async function loadDbOptions() {
-    try {
-       let r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getOptions' }) });
-       let d = await r.json();
-       if(d.status==='success') {
-          LIST_NAMA_DB = d.nama; LIST_AUM_DB = d.aum; 
-       }
-    } catch(e){}
-  }
+      document.getElementById('menuListContainer').innerHTML = menuHTML;
+    }
 
-  function handleGpsError(err) {
-    console.warn('GPS Error:', err.code);
-    if(err.code == 1) gpsErrorMsg = "Izin Lokasi Ditolak.";
-    else if(err.code == 2) gpsErrorMsg = "GPS Mati / Tidak Terdeteksi.";
-    else if(err.code == 3) gpsErrorMsg = "Waktu Habis Mencari GPS.";
-    else gpsErrorMsg = "Error GPS Tidak Diketahui.";
-    isLocationValid = false; latUser = 0; lngUser = 0;
-    validateButtonState();
-  }
+    function doLogout() { localStorage.removeItem("PCM_USER"); CURRENT_USER = null; showLogin(); }
+    function openPresensiMode() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('presensiScreen').classList.remove('hidden'); if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }).then(s => video.srcObject = s); if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true }); }
+    function closePresensiMode() { if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop()); document.getElementById('presensiScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }
 
-  function updatePosisi(pos) {
-    gpsErrorMsg = ""; 
-    latUser = pos.coords.latitude; lngUser = pos.coords.longitude; lokasiString = latUser+","+lngUser;
-    
-    var closest=Infinity, locObj=null;
-    
-    DAFTAR_LOKASI.forEach(l => { 
-        var d = calcDist(latUser, lngUser, l.lat, l.lng); 
-        if(d < closest) { closest = d; locObj = l; } 
-    });
-    
-    jarakUser = Math.round(closest); 
-    
-    if (locObj) {
+    async function loadDbOptions() {
+      try {
+        let r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getOptions' }) });
+        let d = await r.json();
+        if (d.status === 'success') {
+          LIST_NAMA_DB = d.nama; LIST_AUM_DB = d.aum;
+        }
+      } catch (e) { }
+    }
+
+    function handleGpsError(err) {
+      console.warn('GPS Error:', err.code);
+      if (err.code == 1) gpsErrorMsg = "Izin Lokasi Ditolak.";
+      else if (err.code == 2) gpsErrorMsg = "GPS Mati / Tidak Terdeteksi.";
+      else if (err.code == 3) gpsErrorMsg = "Waktu Habis Mencari GPS.";
+      else gpsErrorMsg = "Error GPS Tidak Diketahui.";
+      isLocationValid = false; latUser = 0; lngUser = 0;
+      validateButtonState();
+    }
+
+    function updatePosisi(pos) {
+      gpsErrorMsg = "";
+      latUser = pos.coords.latitude; lngUser = pos.coords.longitude; lokasiString = latUser + "," + lngUser;
+
+      var closest = Infinity, locObj = null;
+
+      DAFTAR_LOKASI.forEach(l => {
+        var d = calcDist(latUser, lngUser, l.lat, l.lng);
+        if (d < closest) { closest = d; locObj = l; }
+      });
+
+      jarakUser = Math.round(closest);
+
+      if (locObj) {
         namaLokasiTerdekat = locObj.nama;
         activeStartTime = locObj.start;
         activeEndTime = locObj.end;
-    }
+      }
 
-    isLocationValid = (jarakUser <= MAX_RADIUS);
-    
-    var statBox = document.getElementById('statusLokasiBox'); var btnKirim = document.getElementById('btnKirim');
-    
-    if(isLocationValid){ 
-        btnKirim.disabled=false; 
-        statBox.className = "alert alert-success py-2 small mb-3"; 
-        statBox.innerHTML = `<i class="bi bi-geo-alt-fill"></i> ${namaLokasiTerdekat} (${jarakUser}m)`; 
-    } else { 
-        btnKirim.disabled=true; 
-        statBox.className = "alert alert-danger py-2 small mb-3"; 
-        statBox.innerHTML = `<i class="bi bi-x-circle"></i> Kejauhan: ${jarakUser}m`; 
+      isLocationValid = (jarakUser <= MAX_RADIUS);
+
+      var statBox = document.getElementById('statusLokasiBox'); var btnKirim = document.getElementById('btnKirim');
+
+      if (isLocationValid) {
+        btnKirim.disabled = false;
+        statBox.className = "alert alert-success py-2 small mb-3";
+        statBox.innerHTML = `<i class="bi bi-geo-alt-fill"></i> ${namaLokasiTerdekat} (${jarakUser}m)`;
+      } else {
+        btnKirim.disabled = true;
+        statBox.className = "alert alert-danger py-2 small mb-3";
+        statBox.innerHTML = `<i class="bi bi-x-circle"></i> Kejauhan: ${jarakUser}m`;
+      }
+
+      validateButtonState();
     }
-    
-    validateButtonState();
-  }
-  function calcDist(lat1,lon1,lat2,lon2) { var R=6371000, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180; var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2); return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
-  function loading(show) { document.getElementById('loading').classList.toggle('hidden', !show); }
-</script>
+    function calcDist(lat1, lon1, lat2, lon2) { var R = 6371000, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180; var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2); return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); }
+    function loading(show) { document.getElementById('loading').classList.toggle('hidden', !show); }
+
+    function openBadgeInfo() { openFeatureModal('badgeInfoScreen'); }
+    function openFeatureModal(id) {
+      document.getElementById('homeScreen').classList.add('hidden');
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeFeatureModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById('homeScreen').classList.remove('hidden');
+    }
+  </script>
 </body>
+
 </html>
