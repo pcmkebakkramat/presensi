@@ -397,6 +397,7 @@ function getRankingData() {
     status: 'success',
     data: {
       topUsers: topUsers,
+      allUsers: userArr,
       topAums: aumArr,
       daftarAum: daftarAum,
       trendData: trendData
