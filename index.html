@@ -818,7 +818,21 @@
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+
+    <style>
+      .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 5px;
+      }
+      .star-rating input { display: none; }
+      .star-rating label { cursor: pointer; color: #cbd5e1; font-size: 2.2rem; margin: 0; transition: color 0.2s; }
+      .star-rating input:checked ~ label,
+      .star-rating label:hover,
+      .star-rating label:hover ~ label { color: #f59e0b; }
+    </style>
+  </head>
 
 <body>
 
@@ -2714,12 +2728,12 @@
                 <span>Sangat Tidak Setuju</span>
                 <span>Sangat Setuju</span>
               </div>
-              <div class="d-flex justify-content-between mt-1">
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="sus${i}" value="1" required></div>
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="sus${i}" value="2" required></div>
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="sus${i}" value="3" required></div>
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="sus${i}" value="4" required></div>
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="sus${i}" value="5" required></div>
+              <div class="d-flex justify-content-between mt-1 text-center">
+                <label class="form-check-label m-0" style="cursor:pointer;"><div class="small fw-bold text-dark" style="font-size:0.8rem;">1</div><input class="form-check-input mx-auto d-block mt-1" style="border:2px solid #94a3b8; width:1.2rem; height:1.2rem;" type="radio" name="sus${i}" value="1" required></label>
+                <label class="form-check-label m-0" style="cursor:pointer;"><div class="small fw-bold text-dark" style="font-size:0.8rem;">2</div><input class="form-check-input mx-auto d-block mt-1" style="border:2px solid #94a3b8; width:1.2rem; height:1.2rem;" type="radio" name="sus${i}" value="2" required></label>
+                <label class="form-check-label m-0" style="cursor:pointer;"><div class="small fw-bold text-dark" style="font-size:0.8rem;">3</div><input class="form-check-input mx-auto d-block mt-1" style="border:2px solid #94a3b8; width:1.2rem; height:1.2rem;" type="radio" name="sus${i}" value="3" required></label>
+                <label class="form-check-label m-0" style="cursor:pointer;"><div class="small fw-bold text-dark" style="font-size:0.8rem;">4</div><input class="form-check-input mx-auto d-block mt-1" style="border:2px solid #94a3b8; width:1.2rem; height:1.2rem;" type="radio" name="sus${i}" value="4" required></label>
+                <label class="form-check-label m-0" style="cursor:pointer;"><div class="small fw-bold text-dark" style="font-size:0.8rem;">5</div><input class="form-check-input mx-auto d-block mt-1" style="border:2px solid #94a3b8; width:1.2rem; height:1.2rem;" type="radio" name="sus${i}" value="5" required></label>
               </div>
             </div>`;
         });
@@ -2728,18 +2742,18 @@
         let ratingHtml = '';
         ratingQuestions.forEach((q, i) => {
           ratingHtml += `
-            <div class="mb-4">
-              <label class="form-label small fw-bold">${i + 1}. ${q}</label>
-              <div class="d-flex justify-content-between text-muted" style="font-size:0.75rem;">
+            <div class="mb-4 border p-3" style="border-radius:15px; background:#fff;">
+              <label class="form-label small fw-bold text-center w-100 mb-1">${i + 1}. ${q}</label>
+              <div class="star-rating mt-2">
+                <input type="radio" id="star5_${i}" name="rating${i}" value="5" required /><label for="star5_${i}" title="Sangat Baik"><i class="bi bi-star-fill"></i></label>
+                <input type="radio" id="star4_${i}" name="rating${i}" value="4" required /><label for="star4_${i}" title="Baik"><i class="bi bi-star-fill"></i></label>
+                <input type="radio" id="star3_${i}" name="rating${i}" value="3" required /><label for="star3_${i}" title="Cukup"><i class="bi bi-star-fill"></i></label>
+                <input type="radio" id="star2_${i}" name="rating${i}" value="2" required /><label for="star2_${i}" title="Buruk"><i class="bi bi-star-fill"></i></label>
+                <input type="radio" id="star1_${i}" name="rating${i}" value="1" required /><label for="star1_${i}" title="Sangat Buruk"><i class="bi bi-star-fill"></i></label>
+              </div>
+              <div class="d-flex justify-content-between text-muted px-2 mt-1" style="font-size:0.7rem;">
                 <span>Sangat Buruk</span>
                 <span>Sangat Baik</span>
-              </div>
-              <div class="d-flex justify-content-between mt-1">
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="rating${i}" value="1" required></div>
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="rating${i}" value="2" required></div>
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="rating${i}" value="3" required></div>
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="rating${i}" value="4" required></div>
-                <div class="form-check form-check-inline m-0"><input class="form-check-input" type="radio" name="rating${i}" value="5" required></div>
               </div>
             </div>`;
         });
@@ -2754,7 +2768,7 @@
           let today = new Date();
           let deadline = new Date('2026-08-01T00:00:00+07:00');
 
-          if (!surveyFilled && (pCount >= 3 || today >= deadline)) {
+          if (!surveyFilled && (pCount >= 1 || today >= deadline)) {
             // Harus isi survey dulu, tidak bisa pakai aplikasi
             openSurveyModal(false);
           } else if (usageCount < 3) {
@@ -2775,7 +2789,7 @@
         let deadline = new Date('2026-08-01T00:00:00+07:00');
         let pCount = parseInt(localStorage.getItem('local_presensi_count') || '0');
 
-        let isForced = (today >= deadline || pCount >= 3);
+        let isForced = (today >= deadline || pCount >= 1);
         let btnNanti = document.getElementById('btnNantiSurvey');
 
         if (isForced) {
@@ -2899,6 +2913,15 @@
         <div class="menu-text">Keluar Aplikasi</div>
     </li>`;
 
+        let surveyFilled = localStorage.getItem('has_filled_survey') === 'true';
+        if (!surveyFilled) {
+          menuHTML = `
+          <li class="menu-item bg-light" onclick="openSurveyModal(true); toggleMenu()" style="border-radius:10px; margin-bottom:10px; border:1px solid #fcd34d;">
+              <div class="menu-icon text-warning"><i class="bi bi-ui-checks-grid"></i></div>
+              <div class="menu-text text-warning fw-bold">Isi Survei Kepuasan</div><i class="bi bi-chevron-right menu-chevron text-warning"></i>
+          </li>` + menuHTML;
+        }
+
         document.getElementById('menuListContainer').innerHTML = menuHTML;
       }
 
@@ -2911,6 +2934,13 @@
         }
       }
       function openPresensiMode() {
+        let surveyFilled = localStorage.getItem('has_filled_survey') === 'true';
+        let pCount = parseInt(localStorage.getItem('local_presensi_count') || '0');
+        if (!surveyFilled && pCount >= 1) {
+            alert("Harap isi Survei Kepuasan terlebih dahulu untuk dapat melanjutkan presensi.");
+            openSurveyModal(true);
+            return;
+        }
         document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('presensiScreen').classList.remove('hidden'); if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }).then(s => video.srcObject = s); if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
         checkOnboardingAndSurvey();
       }
