@@ -1,0 +1,6 @@
+# Mengabaikan file spesifik
+README.md
+index-lama.html
+
+# Mengabaikan seluruh folder
+presensi_app/
