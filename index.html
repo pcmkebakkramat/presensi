@@ -1402,7 +1402,7 @@
 
     <script>
       // --- KONFIGURASI URL SERVER ---
-      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybuxYZ8H-H14FY9opBkNTxZXBf4cfDuPFUtMW1bt-pKNGXT45WIcnR-eJ2eare11Nklg/exec";
+      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzweO0vq3TP2ugPRvaco-TOdBv6RA22m1Nfrkk5p0jcF433RNYlnEUtZtnS8mb5gs4GRg/exec";
       const MAX_RADIUS = 500;
       const DAFTAR_LOKASI = [
         { nama: "Masjid Abdul Aziz (SMP Muhammadiyah 8 Kebakkramat)", lat: -7.520470615403366, lng: 110.9065007512984, start: 600, end: 730 },
@@ -2060,7 +2060,12 @@
             document.getElementById('dashGreetingName').innerText = data.nama.toLowerCase(); document.getElementById('dashGreetingAum').innerText = data.aum || "-";
             closeProfile();
           }
-        } catch (e) { loading(false); alert(e); }
+        } catch (e) {
+          loading(false); alert(e);
+          var btnKirim = document.getElementById('btnKirim');
+          btnKirim.disabled = false;
+          btnKirim.innerHTML = 'KIRIM DATA';
+        }
       }
 
       function openChangePassword() { document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('passwordScreen').classList.remove('hidden'); }
@@ -2073,7 +2078,12 @@
         try {
           let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'changePassword', data: { username: CURRENT_USER.username, newPass: p1 } }) });
           let res = await req.json(); loading(false); alert(res.message); if (res.status === 'success') { closeChangePassword(); doLogout(); }
-        } catch (e) { loading(false); alert(e); }
+        } catch (e) {
+          loading(false); alert(e);
+          var btnKirim = document.getElementById('btnKirim');
+          btnKirim.disabled = false;
+          btnKirim.innerHTML = 'KIRIM DATA';
+        }
       }
 
       function validateButtonState() {
@@ -2591,10 +2601,15 @@
       let currentHistoryList = [];
 
       function checkTodayStatus(history) {
-        var today = new Date(); isAlreadyPresent = false;
+        var today = new Date();
+        var todayStr = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+        isAlreadyPresent = (localStorage.getItem('last_presensi_date') === todayStr);
         if (history.length > 0) {
           var lastRaw = new Date(history[0].tanggalRaw);
-          if (lastRaw.getDate() === today.getDate() && lastRaw.getMonth() === today.getMonth() && lastRaw.getFullYear() === today.getFullYear()) isAlreadyPresent = true;
+          if (lastRaw.getDate() === today.getDate() && lastRaw.getMonth() === today.getMonth() && lastRaw.getFullYear() === today.getFullYear()) {
+            isAlreadyPresent = true;
+            localStorage.setItem('last_presensi_date', todayStr);
+          }
         }
         validateButtonState();
       }
@@ -2662,7 +2677,12 @@
             if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
             checkOnboardingAndSurvey();
           } else alert(res.message);
-        } catch (e) { loading(false); alert(e); }
+        } catch (e) {
+          loading(false); alert(e);
+          var btnKirim = document.getElementById('btnKirim');
+          btnKirim.disabled = false;
+          btnKirim.innerHTML = 'KIRIM DATA';
+        }
       }
 
       async function doRegister() {
@@ -2673,11 +2693,19 @@
         try {
           let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'register', data: { username: u, password: p, nama: n, aum: a } }) });
           let res = await req.json(); loading(false); alert(res.message); if (res.status === 'success') showLogin();
-        } catch (e) { loading(false); alert(e); }
+        } catch (e) {
+          loading(false); alert(e);
+          var btnKirim = document.getElementById('btnKirim');
+          btnKirim.disabled = false;
+          btnKirim.innerHTML = 'KIRIM DATA';
+        }
       }
 
       async function kirimAbsen() {
         var kes = document.getElementById('kesimpulan').value; if (!kes) return alert("Isi kesimpulan");
+        var btnKirim = document.getElementById('btnKirim');
+        btnKirim.disabled = true;
+        btnKirim.innerHTML = '<span class="spinner-border spinner-border-sm"></span> MENGIRIM...';
         loading(true);
         var cvs = document.getElementById('canvas'); cvs.width = video.videoWidth; cvs.height = video.videoHeight;
         var ctx = cvs.getContext('2d'); ctx.save(); ctx.translate(cvs.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, 0, 0); ctx.restore();
@@ -2690,6 +2718,14 @@
           let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'savePresensi', data: { nama: CURRENT_USER.nama, aum: CURRENT_USER.aum, kegiatan: "Pengajian - " + dateStr, kesimpulan: kes, lokasiString: lokasiString, lat: latUser, lng: lngUser, image: base64 } }) });
           let res = await req.json(); loading(false); alert(res.message);
           if (res.status === 'success') {
+            var btnKirim = document.getElementById('btnKirim');
+            btnKirim.disabled = false;
+            btnKirim.innerHTML = 'KIRIM DATA';
+            var today = new Date();
+            var todayStr = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+            localStorage.setItem('last_presensi_date', todayStr);
+            isAlreadyPresent = true;
+            validateButtonState();
             closePresensiMode(); loadDashboardData();
             let pCount = parseInt(localStorage.getItem('local_presensi_count') || '0');
             localStorage.setItem('local_presensi_count', pCount + 1);
@@ -2698,7 +2734,12 @@
               setTimeout(() => { openSurveyModal(false); }, 1000);
             }
           }
-        } catch (e) { loading(false); alert(e); }
+        } catch (e) {
+          loading(false); alert(e);
+          var btnKirim = document.getElementById('btnKirim');
+          btnKirim.disabled = false;
+          btnKirim.innerHTML = 'KIRIM DATA';
+        }
       }
 
       function checkSession() { var stored = localStorage.getItem("PCM_USER"); if (stored) { CURRENT_USER = JSON.parse(stored); showDashboard(); } else showLogin(); }
