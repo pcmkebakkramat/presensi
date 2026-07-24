@@ -1404,7 +1404,7 @@
       // --- KONFIGURASI URL SERVER ---
       const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzweO0vq3TP2ugPRvaco-TOdBv6RA22m1Nfrkk5p0jcF433RNYlnEUtZtnS8mb5gs4GRg/exec";
       const MAX_RADIUS = 500;
-      const DAFTAR_LOKASI = [
+      var DAFTAR_LOKASI = [
         { nama: "Masjid Abdul Aziz (SMP Muhammadiyah 8 Kebakkramat)", lat: -7.520470615403366, lng: 110.9065007512984, start: 600, end: 730 },
         { nama: "Gedung Dakwah PDM Karanganyar", lat: -7.586223863399417, lng: 110.91830297060768, start: 600, end: 730 },
         { nama: "Masjid Al Mukarromah, Karanganyar", lat: -7.5991158597467505, lng: 110.95277542273423, start: 600, end: 730 },
@@ -1432,6 +1432,18 @@
       var gpsErrorMsg = "";
       var activeStartTime = 600;
       var activeEndTime = 730;
+
+      // Overrides khusus tanggal 26 Juli 2026
+      (function() {
+        var now = new Date();
+        if (now.getFullYear() === 2026 && now.getMonth() === 6 && now.getDate() === 26) {
+          DAFTAR_LOKASI = [
+            { nama: "Masjid Abdul Aziz (SMP Muhammadiyah 8 Kebakkramat)", lat: -7.520470615403366, lng: 110.9065007512984, start: 745, end: 1200 }
+          ];
+          activeStartTime = 745;
+          activeEndTime = 1200;
+        }
+      })();
 
       // DATA GLOBAL UNTUK PDF
       var reportData = [];
