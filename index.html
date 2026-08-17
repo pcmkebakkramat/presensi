@@ -2829,15 +2829,7 @@
       function checkOnboardingAndSurvey() {
         setTimeout(() => {
           let usageCount = parseInt(localStorage.getItem('app_usage_count') || '0');
-          let surveyFilled = localStorage.getItem('has_filled_survey') === 'true';
-          let pCount = parseInt(localStorage.getItem('local_presensi_count') || '0');
-          let today = new Date();
-          let deadline = new Date('2026-08-01T00:00:00+07:00');
-
-          if (!surveyFilled && (pCount >= 2 || today >= deadline)) {
-            // Harus isi survey dulu, tidak bisa pakai aplikasi
-            openSurveyModal(false);
-          } else if (usageCount < 3) {
+          if (usageCount < 3) {
             localStorage.setItem('app_usage_count', usageCount + 1);
             openFeatureModal('infoUpdateScreen');
           }
@@ -2851,11 +2843,9 @@
 
       function openSurveyModal(isLogout) {
         openFeatureModal('susSurveyScreen');
-        let today = new Date();
-        let deadline = new Date('2026-08-01T00:00:00+07:00');
         let pCount = parseInt(localStorage.getItem('local_presensi_count') || '0');
 
-        let isForced = (today >= deadline || pCount >= 2);
+        let isForced = (pCount >= 2);
         let btnNanti = document.getElementById('btnNantiSurvey');
 
         if (isForced) {
