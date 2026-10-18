@@ -1425,6 +1425,7 @@
 
       var CURRENT_USER = null;
       var LIST_NAMA_DB = []; var LIST_AUM_DB = [];
+      var OPTIONS_READY = false, OPTIONS_REQUEST = null;
       var CURRENT_PICKER_TYPE = "";
       var video = document.getElementById('camera');
       var latUser = 0, lngUser = 0, lokasiString = "", jarakUser = 0, namaLokasiTerdekat = "";
@@ -1462,6 +1463,22 @@
       }
 
       var userNBM = "";
+      // Tab-scoped stale-while-revalidate cache: returning to a screen can paint
+      // the last result immediately while the server refresh runs in parallel.
+      var PROFILE_CACHE = null;
+      function legacyCacheKey(kind, suffix) {
+        return 'pcm-v4:' + kind + ':' + (CURRENT_USER ? CURRENT_USER.username : 'guest') + (suffix ? ':' + suffix : '');
+      }
+      function readLegacyCache(key) {
+        try { var raw = sessionStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+      }
+      function writeLegacyCache(key, value) {
+        try { sessionStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* cache is an optional speed-up */ }
+      }
+      function invalidateLegacyUserCache() {
+        try { Object.keys(sessionStorage).filter(function(key){return key.indexOf('pcm-v4:') === 0;}).forEach(function(key){sessionStorage.removeItem(key);}); } catch (e) {}
+        PROFILE_CACHE = null;
+      }
 
       window.onload = function () {
         try {
@@ -2036,25 +2053,31 @@
       function closeInfoModal() { document.getElementById('infoModal').classList.add('hidden'); }
 
       async function openProfile() {
-        loading(true);
+        var cachedProfile = PROFILE_CACHE || readLegacyCache(legacyCacheKey('profile'));
+        if (cachedProfile) applyProfileToForm(cachedProfile);
+        else {
+          document.getElementById('homeScreen').classList.add('hidden');
+          document.getElementById('profileScreen').classList.remove('hidden');
+        }
         try {
           let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getProfile', username: CURRENT_USER.username }) });
-          let res = await req.json(); loading(false);
+          let res = await req.json();
           if (res.status === 'success') {
-            var d = res.data;
-            // Simpan NBM untuk keperluan Report
-            userNBM = d.nbm || "-";
-
-            document.getElementById('profNama').value = d.nama;
-            var selAum = document.getElementById('profAum'); selAum.innerHTML = "";
-            LIST_AUM_DB.forEach(a => { var opt = document.createElement('option'); opt.value = a; opt.text = a; if (a == d.aum) opt.selected = true; selAum.add(opt); });
-            document.getElementById('profJk').value = d.jk; document.getElementById('profNbm').value = d.nbm;
-            document.getElementById('profAlamat').value = d.alamat; document.getElementById('profTempat').value = d.tempat_lahir;
-            document.getElementById('profTgl').value = d.tgl_lahir; document.getElementById('profEmail').value = d.email;
-            document.getElementById('profHp').value = d.hp;
-            document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('profileScreen').classList.remove('hidden');
+            PROFILE_CACHE = res.data; writeLegacyCache(legacyCacheKey('profile'), res.data); applyProfileToForm(res.data);
           } else { alert(res.message); }
-        } catch (e) { loading(false); alert("Gagal: " + e); }
+        } catch (e) { alert("Gagal memuat profil: " + e); }
+      }
+
+      function applyProfileToForm(d) {
+        userNBM = d.nbm || '-';
+        document.getElementById('profNama').value = d.nama || '';
+        var selAum = document.getElementById('profAum'); selAum.innerHTML = '';
+        var aums = LIST_AUM_DB.slice(); if (d.aum && !aums.includes(d.aum)) aums.push(d.aum);
+        aums.forEach(function(a){var opt=document.createElement('option');opt.value=a;opt.text=a;if(a===d.aum)opt.selected=true;selAum.add(opt);});
+        document.getElementById('profJk').value=d.jk||'';document.getElementById('profNbm').value=d.nbm||'';
+        document.getElementById('profAlamat').value=d.alamat||'';document.getElementById('profTempat').value=d.tempat_lahir||'';
+        document.getElementById('profTgl').value=d.tgl_lahir||'';document.getElementById('profEmail').value=d.email||'';document.getElementById('profHp').value=d.hp||'';
+        document.getElementById('homeScreen').classList.add('hidden');document.getElementById('profileScreen').classList.remove('hidden');
       }
 
       function closeProfile() { document.getElementById('profileScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }
@@ -2066,6 +2089,7 @@
           let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProfile', data: data }) });
           let res = await req.json(); loading(false); alert(res.message);
           if (res.status === 'success') {
+            invalidateLegacyUserCache();
             CURRENT_USER.nama = data.nama; CURRENT_USER.aum = data.aum;
             userNBM = data.nbm; // Update NBM lokal juga
             localStorage.setItem("PCM_USER", JSON.stringify(CURRENT_USER));
@@ -2120,6 +2144,9 @@
         if (isAlreadyPresent) {
           btn.disabled = true; btn.innerHTML = "<i class='bi bi-check2-circle'></i> SUDAH PRESENSI"; btn.classList.add('btn-secondary');
         }
+        else if (!OPTIONS_READY) {
+          btn.disabled = true; btn.innerHTML = "<span class='spinner-border spinner-border-sm'></span> MEMUAT LOKASI..."; btn.classList.add('btn-secondary');
+        }
         else if (!isTimeValid) {
           btn.disabled = true; btn.innerHTML = "<i class='bi bi-clock-history'></i> PRESENSI DITUTUP"; btn.classList.add('btn-secondary');
           msg.innerHTML = `<b>Jadwal Kajian Di Sini:</b><br>Ahad ${formatTime(activeStartTime)} - ${formatTime(activeEndTime)} WIB.`;
@@ -2159,9 +2186,18 @@
 
         var start = document.getElementById('filterStart').value;
         var end = document.getElementById('filterEnd').value;
+        var cacheKey = legacyCacheKey('report', start + '_' + end);
+        var cached = readLegacyCache(cacheKey);
+        if (cached) applyDashboardReport(cached);
         try {
           let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getReport', nama: CURRENT_USER.nama, start: start, end: end }) });
           let res = await req.json();
+          if (res && (res.status === 'success' || res.history)) { writeLegacyCache(cacheKey, res); applyDashboardReport(res); }
+        } catch (e) { }
+      }
+
+      function applyDashboardReport(res) {
+          if (!res || !Array.isArray(res.history)) return;
           if (CURRENT_USER && CURRENT_USER.nama) {
             document.getElementById('dashGreetingName').innerText = CURRENT_USER.nama.toLowerCase();
             document.getElementById('dashGreetingAum').innerText = CURRENT_USER.aum || "-";
@@ -2208,30 +2244,26 @@
 
           checkTodayStatus(res.history); renderHistory(res.history);
 
-          // Background load user details for NBM
-          if (!userNBM) {
+          // Load profile once in the background so the profile screen can open instantly later.
+          if (!PROFILE_CACHE) {
+            var profileCached = readLegacyCache(legacyCacheKey('profile'));
+            if (profileCached) { PROFILE_CACHE = profileCached; userNBM = profileCached.nbm || '-'; }
             fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getProfile', username: CURRENT_USER.username }) })
-              .then(r => r.json()).then(d => { if (d.status === 'success') userNBM = d.data.nbm; });
+              .then(r => r.json()).then(d => { if (d.status === 'success') { PROFILE_CACHE=d.data; userNBM=d.data.nbm||'-'; writeLegacyCache(legacyCacheKey('profile'),d.data); } }).catch(function(){});
           }
-
-          // Muat Data Ranking di Latar Belakang
-          loadRankingData();
-
-        } catch (e) { }
       }
 
       let globalRankingData = null;
 
       async function loadRankingData() {
+        var cacheKey = legacyCacheKey('ranking');
+        var cached = readLegacyCache(cacheKey);
+        if (cached && cached.status === 'success') applyRankingData(cached.data);
         try {
           let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getRanking' }) });
           let res = await req.json();
           if (res.status === 'success') {
-            globalRankingData = res.data;
-            renderPalingAktif(res.data.topUsers);
-            renderAumTeraktif(res.data.topAums);
-            renderDaftarAum(res.data.daftarAum);
-            if (res.data.trendData) renderTrendChart(res.data.trendData);
+            writeLegacyCache(cacheKey, res); applyRankingData(res.data);
           }
         } catch (e) {
           console.error("Gagal memuat ranking:", e);
@@ -2239,6 +2271,12 @@
           let loader = document.getElementById('dashLoading');
           if (loader) loader.classList.add('hidden');
         }
+      }
+
+      function applyRankingData(data) {
+        globalRankingData = data;
+        renderPalingAktif(data.topUsers || []); renderAumTeraktif(data.topAums || []); renderDaftarAum(data.daftarAum || []);
+        if (data.trendData) renderTrendChart(data.trendData);
       }
 
       function renderPalingAktif(users) {
@@ -2687,7 +2725,6 @@
             CURRENT_USER = { username: res.username, nama: res.nama, aum: res.aum, role: res.role, managementToken: res.managementToken || '' };
             localStorage.setItem("PCM_USER", JSON.stringify(CURRENT_USER)); showDashboard();
             if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
-            checkOnboardingAndSurvey();
           } else alert(res.message);
         } catch (e) {
           loading(false); alert(e);
@@ -2737,8 +2774,9 @@
             var todayStr = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
             localStorage.setItem('last_presensi_date', todayStr);
             isAlreadyPresent = true;
+            invalidateLegacyUserCache();
             validateButtonState();
-            closePresensiMode(); loadDashboardData();
+            closePresensiMode(); loadDashboardData(); loadRankingData();
             let pCount = parseInt(localStorage.getItem('local_presensi_count') || '0');
             localStorage.setItem('local_presensi_count', pCount + 1);
             let surveyFilled = localStorage.getItem('has_filled_survey') === 'true';
@@ -2915,7 +2953,10 @@
         document.getElementById('dashGreetingName').innerText = CURRENT_USER.nama.toLowerCase();
         document.getElementById('dashGreetingAum').innerText = CURRENT_USER.aum || "-";
         renderMenu();
+        // Both independent dashboard requests start together; report no longer
+        // holds up ranking data or the dashboard loader.
         loadDashboardData();
+        loadRankingData();
         if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
         checkOnboardingAndSurvey();
       }
@@ -3008,29 +3049,38 @@
           openSurveyModal(true);
           return;
         }
-        // Refresh the shared organization settings every time attendance opens.
-        await loadDbOptions();
+        if (!OPTIONS_READY) {
+          var initialOptions = readLegacyCache(legacyCacheKey('options'));
+          if (initialOptions) applyDbOptions(initialOptions);
+        }
+        loadDbOptions();
         document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('presensiScreen').classList.remove('hidden'); if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }).then(s => video.srcObject = s); if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
         checkOnboardingAndSurvey();
       }
       function closePresensiMode() { if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop()); document.getElementById('presensiScreen').classList.add('hidden'); document.getElementById('homeScreen').classList.remove('hidden'); }
 
       async function loadDbOptions() {
+        if (OPTIONS_REQUEST) return OPTIONS_REQUEST;
+        var cachedOptions = readLegacyCache(legacyCacheKey('options'));
+        if (cachedOptions) applyDbOptions(cachedOptions);
+        OPTIONS_REQUEST = (async function(){
         try {
           let r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getOptions' }) });
           let d = await r.json();
-          if (d.status === 'success') {
-            LIST_NAMA_DB = d.nama; LIST_AUM_DB = d.aum;
-            if (Array.isArray(d.locations)) {
-              DAFTAR_LOKASI = d.locations.map(loc => ({
-                ...loc,
-                radius: Number(loc.radius || MAX_RADIUS),
-                start: Number(loc.start == null ? 600 : loc.start),
-                end: Number(loc.end == null ? 730 : loc.end)
-              }));
-            }
-          }
+          if (d.status === 'success') { applyDbOptions(d); writeLegacyCache(legacyCacheKey('options'), d); }
         } catch (e) { }
+        finally { OPTIONS_REQUEST = null; }
+        })();
+        return OPTIONS_REQUEST;
+      }
+
+      function applyDbOptions(d) {
+        LIST_NAMA_DB = d.nama || []; LIST_AUM_DB = d.aum || []; OPTIONS_READY = true;
+        if (Array.isArray(d.locations)) DAFTAR_LOKASI = d.locations.map(loc => ({
+          ...loc, radius: Number(loc.radius || MAX_RADIUS),
+          start: Number(loc.start == null ? 600 : loc.start), end: Number(loc.end == null ? 730 : loc.end)
+        }));
+        validateButtonState();
       }
 
       function handleGpsError(err) {
