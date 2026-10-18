@@ -2684,7 +2684,7 @@
           let req = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'login', data: { username: u, password: p } }) });
           let res = await req.json(); loading(false);
           if (res.status === 'success') {
-            CURRENT_USER = { username: res.username, nama: res.nama, aum: res.aum, role: res.role };
+            CURRENT_USER = { username: res.username, nama: res.nama, aum: res.aum, role: res.role, managementToken: res.managementToken || '' };
             localStorage.setItem("PCM_USER", JSON.stringify(CURRENT_USER)); showDashboard();
             if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
             checkOnboardingAndSurvey();
@@ -2754,7 +2754,7 @@
         }
       }
 
-      function checkSession() { var stored = localStorage.getItem("PCM_USER"); if (stored) { CURRENT_USER = JSON.parse(stored); showDashboard(); } else showLogin(); }
+      function checkSession() { var stored = localStorage.getItem("PCM_USER"); if (stored) { CURRENT_USER = JSON.parse(stored); if (CURRENT_USER.role === 'admin' && !CURRENT_USER.managementToken) { localStorage.removeItem("PCM_USER"); CURRENT_USER = null; showLogin(); alert("Silakan masuk kembali agar sesi admin baru bisa dipakai untuk mengelola anggota, AUM, dan lokasi."); return; } showDashboard(); } else showLogin(); }
       function showLogin() {
         document.getElementById('authScreen').classList.remove('hidden');
         document.getElementById('homeScreen').classList.add('hidden');
@@ -2855,7 +2855,7 @@
           btnNanti.onclick = function () {
             closeFeatureModal('susSurveyScreen');
             if (isLogout) {
-              localStorage.removeItem("PCM_USER"); CURRENT_USER = null; showLogin();
+              clearCurrentSession();
             }
           };
         }
@@ -2940,6 +2940,10 @@
             <div class="menu-icon" style="background:#dbeafe; color:#1e40af"><i class="bi bi-calendar-plus-fill"></i></div>
             <div class="menu-text">Kelola Jadwal</div><i class="bi bi-chevron-right menu-chevron"></i>
         </li>
+        <li class="menu-item" onclick="window.location.href='manage.html'">
+            <div class="menu-icon" style="background:#ccfbf1; color:#0f766e"><i class="bi bi-people-fill"></i></div>
+            <div class="menu-text">Kelola Anggota, AUM & Lokasi</div><i class="bi bi-chevron-right menu-chevron"></i>
+        </li>
         <li class="menu-item" onclick="window.location.href='presensi.html'">
             <div class="menu-icon" style="background:#dcfce7; color:#15803d"><i class="bi bi-camera-fill"></i></div>
             <div class="menu-text">Presensi Kegiatan</div><i class="bi bi-chevron-right menu-chevron"></i>
@@ -2981,15 +2985,22 @@
         document.getElementById('menuListContainer').innerHTML = menuHTML;
       }
 
+      function clearCurrentSession() {
+        if (CURRENT_USER && CURRENT_USER.managementToken) {
+          fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ client: 'hadirmu', action: 'logout', token: CURRENT_USER.managementToken }) }).catch(function(){});
+        }
+        localStorage.removeItem("PCM_USER"); CURRENT_USER = null; showLogin();
+      }
+
       function doLogout() {
         let surveyFilled = localStorage.getItem('has_filled_survey') === 'true';
         if (!surveyFilled) {
           openSurveyModal(true);
         } else {
-          localStorage.removeItem("PCM_USER"); CURRENT_USER = null; showLogin();
+          clearCurrentSession();
         }
       }
-      function openPresensiMode() {
+      async function openPresensiMode() {
         let surveyFilled = localStorage.getItem('has_filled_survey') === 'true';
         let pCount = parseInt(localStorage.getItem('local_presensi_count') || '0');
         if (!surveyFilled && pCount >= 2) {
@@ -2997,6 +3008,8 @@
           openSurveyModal(true);
           return;
         }
+        // Refresh the shared organization settings every time attendance opens.
+        await loadDbOptions();
         document.getElementById('homeScreen').classList.add('hidden'); document.getElementById('presensiScreen').classList.remove('hidden'); if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } }).then(s => video.srcObject = s); if (navigator.geolocation) navigator.geolocation.watchPosition(updatePosisi, handleGpsError, { enableHighAccuracy: true });
         checkOnboardingAndSurvey();
       }
@@ -3008,6 +3021,14 @@
           let d = await r.json();
           if (d.status === 'success') {
             LIST_NAMA_DB = d.nama; LIST_AUM_DB = d.aum;
+            if (Array.isArray(d.locations)) {
+              DAFTAR_LOKASI = d.locations.map(loc => ({
+                ...loc,
+                radius: Number(loc.radius || MAX_RADIUS),
+                start: Number(loc.start == null ? 600 : loc.start),
+                end: Number(loc.end == null ? 730 : loc.end)
+              }));
+            }
           }
         } catch (e) { }
       }
@@ -3037,11 +3058,11 @@
 
         if (locObj) {
           namaLokasiTerdekat = locObj.nama;
-          activeStartTime = locObj.start;
-          activeEndTime = locObj.end;
+          activeStartTime = Number(locObj.start == null ? 600 : locObj.start);
+          activeEndTime = Number(locObj.end == null ? 730 : locObj.end);
         }
 
-        isLocationValid = (jarakUser <= MAX_RADIUS);
+        isLocationValid = Boolean(locObj) && jarakUser <= Number(locObj.radius || MAX_RADIUS);
 
         var statBox = document.getElementById('statusLokasiBox'); var btnKirim = document.getElementById('btnKirim');
 
